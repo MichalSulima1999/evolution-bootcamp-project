@@ -3,8 +3,19 @@ import { usePlayerStore } from "../store/PlayerStore";
 import { observer } from "mobx-react";
 
 const PlayerStats = observer(function PlayerStats() {
-  const { money, addMoney, health, maxHealth, armor, damage, specialAttack } =
-    usePlayerStore();
+  const {
+    money,
+    addMoney,
+    health,
+    maxHealth,
+    armor,
+    damage,
+    specialAttack,
+    freeSpins,
+    experience,
+    experienceToNextLevel,
+    level,
+  } = usePlayerStore();
   return (
     <header>
       <h1>SlotQuest</h1>
@@ -28,6 +39,18 @@ const PlayerStats = observer(function PlayerStats() {
         <div>
           <img src="assets/sword_special.png" alt="special" />
           {specialAttack.damage}
+        </div>
+        <div>
+          <img src="assets/Exp.png" alt="special" />
+          {experience} / {experienceToNextLevel}
+        </div>
+        <div>
+          <img src="assets/Level.png" alt="level" />
+          {level}
+        </div>
+        <div>
+          <img src="assets/Free-spins.png" alt="spins" />
+          {freeSpins}
         </div>
         <button
           onClick={() => {

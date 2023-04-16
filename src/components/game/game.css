@@ -1,4 +1,11 @@
 .stage {
-    text-align: center;
-    padding-top: 4rem;
+  text-align: center;
+  padding-top: 4rem;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background-color: black;
 }

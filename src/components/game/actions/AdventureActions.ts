@@ -1,4 +1,4 @@
-enum Drum {
+export enum Drum {
   FIGHT,
   TREASURE,
   HEAL,
@@ -7,22 +7,68 @@ enum Drum {
   WILD_CARD,
 }
 
+export enum NumberOfDrums {
+  TWO = 2,
+  THREE = 3,
+}
+
+export interface Actions {
+  fight: (drums: NumberOfDrums) => void;
+  treasure: (drums: NumberOfDrums) => void;
+  heal: (drums: NumberOfDrums) => void;
+  freeSpins: (drums: NumberOfDrums) => void;
+  trap: (drums: NumberOfDrums) => void;
+}
+
 export class AdventureActions {
-  private bet: number = 0;
+  private _bet: number = 0;
   private drum1: Drum = Drum.FIGHT;
   private drum2: Drum = Drum.FIGHT;
   private drum3: Drum = Drum.FIGHT;
 
-  public spin(bet: number) {
-    this.bet = bet;
+  /**
+   * Getter bet
+   * @return {number }
+   */
+  public get bet(): number {
+    return this._bet;
+  }
+
+  public spin(bet: number, actions: Actions): Drum[] {
+    console.log(bet);
+
+    this._bet = bet;
 
     this.drum1 = this.getRandomDrum();
     this.drum2 = this.getRandomDrum();
     this.drum3 = this.getRandomDrum();
 
     // Check if all drums have the same value
-    if (this.drum1 === this.drum2 && this.drum2 === this.drum3) {
-      console.log(`3 - ${this.drum1}`);
+    if (
+      (this.drum1 === this.drum2 && this.drum2 === this.drum3) ||
+      (this.drum1 === this.drum2 && this.drum3 === Drum.WILD_CARD) ||
+      (this.drum1 === this.drum3 && this.drum2 === Drum.WILD_CARD) ||
+      (this.drum2 === this.drum3 && this.drum1 === Drum.WILD_CARD)
+    ) {
+      switch (this.drum1) {
+        case Drum.FIGHT:
+          actions.fight(3);
+          break;
+        case Drum.TREASURE:
+          actions.treasure(3);
+          break;
+        case Drum.HEAL:
+          actions.heal(3);
+          break;
+        case Drum.FREE_SPINS:
+          actions.freeSpins(3);
+          break;
+        case Drum.TRAP:
+          actions.trap(3);
+          break;
+        case Drum.WILD_CARD:
+          return this.spin(bet, actions);
+      }
     } else if (
       this.drum1 === this.drum2 ||
       this.drum1 === this.drum3 ||
@@ -34,8 +80,29 @@ export class AdventureActions {
           : this.drum2 === this.drum3
           ? this.drum2
           : this.drum1;
+
       console.log(`2 - ${drumValue}`);
+      switch (drumValue) {
+        case Drum.FIGHT:
+          actions.fight(2);
+          break;
+        case Drum.TREASURE:
+          actions.treasure(2);
+          break;
+        case Drum.HEAL:
+          actions.heal(2);
+          break;
+        case Drum.FREE_SPINS:
+          actions.freeSpins(2);
+          break;
+        case Drum.TRAP:
+          actions.trap(2);
+          break;
+        case Drum.WILD_CARD:
+          return this.spin(bet, actions);
+      }
     }
+    return [this.drum1, this.drum2, this.drum3];
   }
 
   private getRandomDrum(): Drum {
@@ -58,14 +125,4 @@ export class AdventureActions {
         throw new Error("Invalid random index generated");
     }
   }
-
-  private fight() {}
-
-  private treasure() {}
-
-  private heal() {}
-
-  private freeSpins() {}
-
-  private trap() {}
 }
