@@ -9,11 +9,12 @@ import {
   AdventureActions,
   Drum,
   NumberOfDrums,
-} from "./actions/AdventureActions";
-import { useBetStore } from "../../store/BetStore";
+} from "../../classes/actions/AdventureActions";
+import { useBetStore } from "../../classes/store/BetStore";
 import { observer } from "mobx-react";
-import { usePlayerStore } from "../../store/PlayerStore";
-import { Treasure, getRandomTreasure } from "./actions/Treasure";
+import { usePlayerStore } from "../../classes/store/PlayerStore";
+import { Treasure, getRandomTreasure } from "../../classes/actions/Treasure";
+import Fight from "./fight/Fight";
 
 const Game = observer(function Game() {
   const [drums, setDrums] = useState<Drum[]>([]);
@@ -105,17 +106,12 @@ const Game = observer(function Game() {
             height={600}
             y={-100}
           />
-          <Sprite
-            image="/assets/bottom-ui.png"
-            width={800}
-            height={200}
-            y={400}
-          />
           <Machine
             drums={drums}
             spinning={spinning}
             setSpinning={setSpinning}
           />
+          <Fight />
         </Stage>
       </div>
       <div className="buttons">

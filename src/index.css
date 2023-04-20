@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "VT323", monospace;
   line-height: 1.5;
   font-weight: 400;
 
@@ -50,7 +50,7 @@ header h1 {
   display: flex;
   align-items: center;
   border-radius: 25px;
-  border: 2px solid #73AD21;
+  border: 2px solid #73ad21;
   padding: 10px;
 }
 

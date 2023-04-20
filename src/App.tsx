@@ -1,8 +1,8 @@
 import "./App.css";
-import { PlayerStoreContext, playerStore } from "./store/PlayerStore";
+import { BetStoreContext, betStore } from "./classes/store/BetStore";
+import { PlayerStoreContext, playerStore } from "./classes/store/PlayerStore";
 import PlayerStats from "./components/PlayerStats";
 import Game from "./components/game/Game";
-import { BetStoreContext, betStore } from "./store/BetStore";
 
 function App() {
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import ImageButton from "./ImageButton";
 import { observer } from "mobx-react";
-import { useBetStore } from "../../store/BetStore";
+import { useBetStore } from "../../classes/store/BetStore";
 import styled from "styled-components";
 
 const Container = styled.div`

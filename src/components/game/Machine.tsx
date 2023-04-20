@@ -1,6 +1,6 @@
 import React from "react";
 import { Sprite } from "@pixi/react";
-import { Drum } from "./actions/AdventureActions";
+import { Drum } from "../../classes/actions/AdventureActions";
 
 interface MachineProps {
   spinning: boolean;
@@ -81,6 +81,7 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
 
   return (
     <>
+      <Sprite image="/assets/bottom-ui.png" width={800} height={200} y={400} />
       <Sprite
         image="/assets/SMFrame_blank.png"
         scale={{ x: 1, y: 1 }}

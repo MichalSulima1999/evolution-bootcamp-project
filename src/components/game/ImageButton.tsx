@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 
 interface ButtonProps {
@@ -49,16 +49,6 @@ const ImageButton: React.FC<ButtonProps> = ({
   width,
   height,
 }) => {
-  const [isHover, setIsHover] = useState(false);
-
-  const handleMouseOver = () => {
-    setIsHover(true);
-  };
-
-  const handleMouseOut = () => {
-    setIsHover(false);
-  };
-
   const handleClick = () => {
     onClick();
   };

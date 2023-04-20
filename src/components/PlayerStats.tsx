@@ -1,5 +1,5 @@
 import React from "react";
-import { usePlayerStore } from "../store/PlayerStore";
+import { usePlayerStore } from "../classes/store/PlayerStore";
 import { observer } from "mobx-react";
 
 const PlayerStats = observer(function PlayerStats() {
