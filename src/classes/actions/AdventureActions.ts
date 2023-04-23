@@ -44,12 +44,15 @@ export class AdventureActions {
     this.drum3 = this.getRandomDrum();
 
     // Check if all drums have the same value
+    const drums = [this.drum1, this.drum2, this.drum3];
+
     if (
       (this.drum1 === this.drum2 && this.drum2 === this.drum3) ||
       (this.drum1 === this.drum2 && this.drum3 === Drum.WILD_CARD) ||
       (this.drum1 === this.drum3 && this.drum2 === Drum.WILD_CARD) ||
       (this.drum2 === this.drum3 && this.drum1 === Drum.WILD_CARD)
     ) {
+      console.log(`3 - ${this.drum1}`);
       switch (this.drum1) {
         case Drum.FIGHT:
           actions.fight(3);

@@ -1,22 +1,20 @@
 import { makeAutoObservable } from "mobx";
 import React from "react";
-import { SpecialAttack } from "../types";
-import { loadState, saveState } from "./LocalStorageHelper";
-
-const EXP_TO_NEXT_LEVEL = [100, 150, 220, 260, 330, 400, 500, 620, 750];
-const MAX_LEVEL = EXP_TO_NEXT_LEVEL.length + 1;
+import { LevelUpInterface, SpecialAttack } from "../../types";
+import { loadState, saveState } from "../../helpers/LocalStorageHelper";
+import { getInitialStats, getMaxLevel } from "../../services/PlayerService";
 
 export class PlayerStore {
-  private _money: number = 100;
-  private _health: number = 100;
-  private _maxHealth: number = 100;
-  private _damage: number = 10;
-  private _armor: number = 0;
-  private _specialAttack: SpecialAttack = { damage: 20 };
-  private _level: number = 1;
-  private _experience: number = 0;
-  private _experienceToNextLevel: number = EXP_TO_NEXT_LEVEL[this.level - 1];
-  private _freeSpins: number = 0;
+  private _money: number;
+  private _health: number;
+  private _maxHealth: number;
+  private _damage: number;
+  private _armor: number;
+  private _specialAttack: SpecialAttack;
+  private _level: number;
+  private _experience: number;
+  private _experienceToNextLevel: number;
+  private _freeSpins: number;
 
   /**
    * Getter money
@@ -111,18 +109,20 @@ export class PlayerStore {
     saveState(this, "playerStore");
   }
 
-  public levelUp() {
-    if (this._level >= MAX_LEVEL) {
+  public levelUp(stats: LevelUpInterface) {
+    if (this._level >= getMaxLevel()) {
       return;
     }
 
-    this._maxHealth += 10;
+    this._maxHealth += stats.hpToAdd;
     this._health = this._maxHealth;
-    this._level++;
+    this._level = stats.nextLevel;
     this._experience = 0;
-    this._experienceToNextLevel = EXP_TO_NEXT_LEVEL[this._level - 1];
+    this._experienceToNextLevel = stats.experienceToNextLevel;
     saveState(this, "playerStore");
   }
+
+  public addExperience() {}
 
   public changeArmorIfBetter(armor: number) {
     if (this._armor >= armor) {
@@ -187,6 +187,19 @@ export class PlayerStore {
       this._level = state._level;
       this._experience = state._experience;
       this._freeSpins = state._freeSpins;
+      this._experienceToNextLevel = state._experienceToNextLevel;
+    } else {
+      const stats = getInitialStats();
+      this._armor = stats.armor;
+      this._damage = stats.damage;
+      this._maxHealth = stats.maxHealth;
+      this._money = stats.money;
+      this._specialAttack = stats.specialAttack;
+      this._health = this._maxHealth;
+      this._experienceToNextLevel = stats.experienceToNextLevel;
+      this._level = 1;
+      this._experience = 0;
+      this._freeSpins = 0;
     }
   }
 }

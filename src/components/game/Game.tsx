@@ -2,99 +2,27 @@ import { Sprite, Stage } from "@pixi/react";
 import React, { useState } from "react";
 import "./game.css";
 import Machine from "./Machine";
-import ImageButton from "./ImageButton";
 import Bet from "./Bet";
-import {
-  Actions,
-  AdventureActions,
-  Drum,
-  NumberOfDrums,
-} from "../../classes/actions/AdventureActions";
+import { Drum, NumberOfDrums } from "../../classes/actions/AdventureActions";
 import { useBetStore } from "../../classes/store/BetStore";
 import { observer } from "mobx-react";
 import { usePlayerStore } from "../../classes/store/PlayerStore";
-import { Treasure, getRandomTreasure } from "../../classes/actions/Treasure";
 import Fight from "./fight/Fight";
+import { FightPlayerAction, GameMode } from "../../types";
+import FightMachine from "./fight/FightMachine";
+import { FightDrum } from "../../types";
+import AdventureSpinButton from "./adventure/AdventureSpinButton";
+import FightSpinButton from "./fight/FightSpinButton";
 
 const Game = observer(function Game() {
   const [drums, setDrums] = useState<Drum[]>([]);
+  const [fightDrums, setFightDrums] = useState<FightDrum[]>([]);
   const [spinning, setSpinning] = useState(false);
-
-  const { bet } = useBetStore();
-  const {
-    money,
-    maxHealth,
-    freeSpins,
-    betMoney,
-    changeArmorIfBetter,
-    changeDamageIfBetter,
-    changeSpecialAttackIfBetter,
-    addMoney,
-    takeDamage,
-    heal,
-    addFreeSpins,
-  } = usePlayerStore();
-  const adventureActions = new AdventureActions();
-
-  const spin = () => {
-    if (spinning) return;
-    if (bet > money && freeSpins <= 0) {
-      // informacja dla użytkownika
-      return;
-    }
-
-    const actions: Actions = {
-      fight: fightAction,
-      heal: healAction,
-      treasure: treasureAction,
-      freeSpins: freeSpinsAction,
-      trap: trapAction,
-    };
-
-    setSpinning(true);
-    if (freeSpins > 0) {
-      setDrums(adventureActions.spin(0, actions));
-      addFreeSpins(-1);
-    } else {
-      betMoney(bet);
-      setDrums(adventureActions.spin(bet, actions));
-    }
-  };
-
-  const fightAction = (drums: NumberOfDrums) => {};
-
-  const healAction = (drums: NumberOfDrums) => {
-    heal(Math.floor((drums * 0.1 + bet * 0.001) * maxHealth));
-  };
-
-  const treasureAction = (drums: NumberOfDrums) => {
-    const treasure = getRandomTreasure();
-
-    switch (treasure.type) {
-      case Treasure.WEAPON:
-        changeDamageIfBetter(Math.floor(treasure.amount + bet * 0.1));
-        break;
-      case Treasure.ARMOR:
-        changeArmorIfBetter(Math.floor(treasure.amount + bet * 0.1));
-        break;
-      case Treasure.SPECIAL_ATTACK:
-        changeSpecialAttackIfBetter({
-          damage: Math.floor(treasure.amount + bet * 0.1),
-        });
-        break;
-      case Treasure.MONEY:
-        addMoney(Math.floor(treasure.amount + bet * 0.2));
-        break;
-    }
-  };
-
-  const freeSpinsAction = (drums: NumberOfDrums) => {
-    addFreeSpins(Math.floor((drums * bet) / 10));
-  };
-
-  const trapAction = (drums: NumberOfDrums) => {
-    takeDamage(Math.floor(drums * 0.1 * maxHealth));
-  };
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.FIGHT);
+  const [playerFightAction, setPlayerFightAction] =
+    useState<FightPlayerAction | null>(null);
+  const [numberOfEnemies, setNumberOfEnemies] = useState<number>(2);
+  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(true);
 
   return (
     <div className="stage">
@@ -106,23 +34,54 @@ const Game = observer(function Game() {
             height={600}
             y={-100}
           />
-          <Machine
-            drums={drums}
-            spinning={spinning}
-            setSpinning={setSpinning}
-          />
-          <Fight />
+          {gameMode === GameMode.ADVENTURE ? (
+            <Machine
+              drums={drums}
+              spinning={spinning}
+              setSpinning={setSpinning}
+            />
+          ) : (
+            <>
+              <FightMachine
+                drums={fightDrums}
+                spinning={spinning}
+                setSpinning={setSpinning}
+              />
+              <Fight
+                usePlayerStore={usePlayerStore()}
+                playerFightAction={playerFightAction}
+                numberOfEnemies={numberOfEnemies}
+                isPlayerTurn={isPlayerTurn}
+                setIsPlayerTurn={setIsPlayerTurn}
+              />
+            </>
+          )}
         </Stage>
       </div>
       <div className="buttons">
         <Bet />
-        <ImageButton
-          onClick={spin}
-          imgPath="/assets/spin.png"
-          imgPressedPath="/assets/spin_pressed.png"
-          width="6rem"
-          height="4rem"
-        />
+        {gameMode === GameMode.ADVENTURE ? (
+          <AdventureSpinButton
+            spinning={spinning}
+            setSpinning={setSpinning}
+            drums={drums}
+            setDrums={setDrums}
+            usePlayerStore={usePlayerStore()}
+            useBetStore={useBetStore()}
+            setGameMode={setGameMode}
+          />
+        ) : (
+          <FightSpinButton
+            spinning={spinning}
+            setSpinning={setSpinning}
+            drums={fightDrums}
+            setDrums={setFightDrums}
+            usePlayerStore={usePlayerStore()}
+            useBetStore={useBetStore()}
+            setPlayerFightAction={setPlayerFightAction}
+            isPlayerTurn={isPlayerTurn}
+          />
+        )}
       </div>
     </div>
   );
