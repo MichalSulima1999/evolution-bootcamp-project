@@ -4,17 +4,22 @@ import { EnemyInterface } from "../../../classes/enemies/Enemies";
 import { FightDrum, FightPlayerAction } from "../../../types";
 import { PlayerStore } from "../../../classes/store/PlayerStore";
 import { NumberOfDrums } from "../../../classes/actions/AdventureActions";
+import { TurnInterface } from "./Fight";
+import { BetStore } from "../../../classes/store/BetStore";
+import { betBonus } from "../../../helpers/FightHelper";
+
+const CRITICAL_MULTIPLIER = 1.5;
 
 export interface EnemyProps {
   x: number;
   y: number;
   enemy: EnemyInterface;
-  isPlayerTurn: boolean;
   setIsPlayerTurn: React.Dispatch<React.SetStateAction<boolean>>;
   playerAction: FightPlayerAction | null;
   usePlayerStore: PlayerStore;
+  useBetStore: BetStore;
   enemyNumber: number;
-  currentEnemyTurn: number;
+  currentEnemyTurn: TurnInterface;
   setEnemyNumberDied: React.Dispatch<React.SetStateAction<number>>;
 }
 
@@ -22,10 +27,10 @@ const Enemy: React.FC<EnemyProps> = ({
   x,
   y,
   enemy,
-  isPlayerTurn,
   setIsPlayerTurn,
   playerAction,
   usePlayerStore,
+  useBetStore,
   enemyNumber,
   currentEnemyTurn,
   setEnemyNumberDied,
@@ -36,54 +41,59 @@ const Enemy: React.FC<EnemyProps> = ({
   );
   const [isPlaying, setIsPlaying] = React.useState(true);
   const [isLooping, setIsLooping] = React.useState(true);
+  const [isDead, setIsDead] = React.useState(false);
 
-  const { takeDamage, armor, damage } = usePlayerStore;
+  const { takeDamage, armor, damage, specialAttack, addExperience } =
+    usePlayerStore;
 
-  useEffect(() => {
-    // window.setTimeout(() => {
-    //   attack();
-    // }, 2000);
-    // window.setTimeout(() => {
-    //   enemyTakeDamage(3);
-    // }, 5000);
-  }, []);
+  const { bet } = useBetStore;
 
   useEffect(() => {
-    console.log("Enemy index from Enemy.tsx: ", currentEnemyTurn);
+    if (enemyNumber !== currentEnemyTurn.index || isDead) return;
 
-    if (enemyNumber !== currentEnemyTurn) return;
-
-    setIsPlayerTurn(!isPlayerTurn);
-
-    if (!isPlayerTurn) {
-      attack();
-      return;
-    }
-
-    if (playerAction === null) {
-      return;
-    }
-
-    switch (playerAction.action) {
-      case FightDrum.ATTACK:
-        enemyTakeDamage(playerAction.numberOfDrums);
-        break;
-      case FightDrum.SPECIAL_ATTACK:
-        break;
+    if (playerAction !== null) {
+      switch (playerAction.action) {
+        case FightDrum.ATTACK:
+          enemyTakeDamage(playerAction.numberOfDrums, damage).then((dead) => {
+            if (!dead) attack();
+          });
+          break;
+        case FightDrum.SPECIAL_ATTACK:
+          enemyTakeDamage(
+            playerAction.numberOfDrums,
+            specialAttack.damage
+          ).then((dead) => {
+            if (!dead) attack();
+          });
+          break;
+        case FightDrum.DEFEND:
+          attackPlayer();
+      }
+    } else {
+      attackPlayer();
     }
   }, [currentEnemyTurn]);
 
-  const die = () => {
+  const attackPlayer = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    attack();
+  };
+
+  const die = async () => {
     setIsPlaying(false);
-    window.setTimeout(() => {
-      setCurrentAnimation(enemy.dieImages);
-      setIsPlaying(true);
-      setIsLooping(false);
-    }, 100);
+    setIsDead(true);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    setCurrentAnimation(enemy.dieImages);
+    setIsPlaying(true);
+    setIsLooping(false);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setEnemyNumberDied(enemyNumber);
+    setIsPlayerTurn(true);
+    addExperience(enemy.experience);
   };
 
   const attack = async () => {
+    if (isDead) return;
     setIsPlaying(false);
     setCurrentAnimation(enemy.attackImages);
 
@@ -94,16 +104,24 @@ const Enemy: React.FC<EnemyProps> = ({
 
     setIsPlaying(false);
     if (playerAction !== null && playerAction.action === FightDrum.DEFEND) {
-      takeDamage(enemy.damage - armor * playerAction.numberOfDrums);
+      takeDamage(
+        enemy.damage - armor * playerAction.numberOfDrums * betBonus(bet)
+      );
     } else {
       takeDamage(enemy.damage - armor);
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
     setCurrentAnimation(enemy.idleImages);
     setIsPlaying(true);
+    setIsPlayerTurn(true);
   };
 
-  const enemyTakeDamage = async (numberOfDrums: NumberOfDrums) => {
+  // Return true when enemy is dead
+  const enemyTakeDamage = async (
+    numberOfDrums: NumberOfDrums,
+    baseDamage: number
+  ): Promise<boolean> => {
+    if (isDead) return true;
     setIsPlaying(false);
     setCurrentAnimation(enemy.hurtImages);
 
@@ -113,8 +131,12 @@ const Enemy: React.FC<EnemyProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     setIsPlaying(false);
-    const hp = health - (numberOfDrums === 2 ? damage : damage * 1.5);
-    setHealth(hp);
+    const hp =
+      health -
+      (numberOfDrums === 2
+        ? baseDamage * betBonus(bet)
+        : baseDamage * CRITICAL_MULTIPLIER * betBonus(bet));
+    setHealth(Math.ceil(hp));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     setCurrentAnimation(enemy.idleImages);
@@ -122,7 +144,9 @@ const Enemy: React.FC<EnemyProps> = ({
 
     if (hp <= 0) {
       die();
+      return true;
     }
+    return false;
   };
 
   return (

@@ -1,6 +1,7 @@
 import React from "react";
 import { Sprite } from "@pixi/react";
 import { FightDrum } from "../../../types";
+import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 
 interface MachineProps {
   spinning: boolean;
@@ -23,7 +24,7 @@ const FightMachine: React.FC<MachineProps> = ({
     "/assets/shield.png",
   ];
 
-  React.useEffect(() => {
+  useDidUpdateEffect(() => {
     if (!spinning) {
       return;
     }

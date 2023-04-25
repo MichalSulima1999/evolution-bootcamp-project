@@ -3,6 +3,7 @@ import React from "react";
 import { LevelUpInterface, SpecialAttack } from "../../types";
 import { loadState, saveState } from "../../helpers/LocalStorageHelper";
 import { getInitialStats, getMaxLevel } from "../../services/PlayerService";
+import { levelUpPlayer } from "../../services/PlayerService";
 
 export class PlayerStore {
   private _money: number;
@@ -122,7 +123,15 @@ export class PlayerStore {
     saveState(this, "playerStore");
   }
 
-  public addExperience() {}
+  public addExperience(experience: number) {
+    const exp = experience + this._experience;
+    if (exp >= this._experienceToNextLevel) {
+      this._experience = exp - this._experienceToNextLevel;
+      this.levelUp(levelUpPlayer(this._level));
+    } else {
+      this._experience = exp;
+    }
+  }
 
   public changeArmorIfBetter(armor: number) {
     if (this._armor >= armor) {
@@ -159,6 +168,7 @@ export class PlayerStore {
   }
 
   public takeDamage(amount: number) {
+    if (amount <= 0) return;
     this._health -= amount;
     if (this._health <= 0) {
       this._health = 0;

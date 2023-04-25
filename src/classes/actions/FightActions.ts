@@ -66,7 +66,6 @@ export class FightActions {
 
   private getRandomDrum(): FightDrum {
     const randomIndex = Math.floor(Math.random() * 3);
-    console.log(randomIndex);
 
     switch (randomIndex) {
       case 0:

@@ -33,7 +33,7 @@ export const levelUpPlayer = (level: number): LevelUpInterface => {
 
 export const getInitialStats = (): PlayerStats => {
   const stats: PlayerStats = {
-    money: 100,
+    money: 300,
     maxHealth: 100,
     damage: 10,
     armor: 0,

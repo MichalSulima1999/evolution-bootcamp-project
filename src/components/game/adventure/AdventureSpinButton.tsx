@@ -20,6 +20,7 @@ import { BetStore } from "../../../classes/store/BetStore";
 interface ButtonProps {
   spinning: boolean;
   setSpinning: React.Dispatch<React.SetStateAction<boolean>>;
+  setNumberOfEnemies: React.Dispatch<React.SetStateAction<number>>;
   drums: Drum[];
   setDrums: React.Dispatch<React.SetStateAction<Drum[]>>;
   usePlayerStore: PlayerStore;
@@ -30,7 +31,7 @@ interface ButtonProps {
 const AdventureSpinButton: React.FC<ButtonProps> = ({
   spinning,
   setSpinning,
-  drums,
+  setNumberOfEnemies,
   setDrums,
   usePlayerStore,
   useBetStore,
@@ -54,7 +55,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = ({
     addFreeSpins,
   } = usePlayerStore;
 
-  const spin = () => {
+  const spin = async () => {
     if (spinning) return;
     if (bet > money && freeSpins <= 0) {
       // informacja dla użytkownika
@@ -70,6 +71,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = ({
     };
 
     setSpinning(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     if (freeSpins > 0) {
       setDrums(adventureActions.spin(0, actions));
       addFreeSpins(-1);
@@ -80,6 +82,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = ({
   };
 
   const fightAction = (drums: NumberOfDrums) => {
+    setNumberOfEnemies(drums);
     setGameMode(GameMode.FIGHT);
   };
 

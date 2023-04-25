@@ -10,6 +10,7 @@ export interface EnemyInterface {
   attackImages: Texture<Resource>[];
   dieImages: Texture<Resource>[];
   hurtImages: Texture<Resource>[];
+  experience: number;
 }
 
 const getTextures = (
@@ -41,4 +42,5 @@ export const Goblin: EnemyInterface = {
   attackImages: getTextures("goblin", "attack", 5),
   dieImages: getTextures("goblin", "die", 4),
   hurtImages: getTextures("goblin", "hurt", 4),
+  experience: 40,
 };

@@ -2,14 +2,26 @@ import React, { useEffect, useState } from "react";
 import Enemy from "./Enemy";
 import { EnemyInterface, Goblin } from "../../../classes/enemies/Enemies";
 import { PlayerStore } from "../../../classes/store/PlayerStore";
-import { FightPlayerAction } from "../../../types";
+import { FightPlayerAction, GameMode } from "../../../types";
+import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
+import { Text } from "@pixi/react";
+import { TextStyle } from "pixi.js";
+import { BetStore } from "../../../classes/store/BetStore";
+import { getMoneyReward } from "../../../services/FightService";
 
 interface FightProps {
   usePlayerStore: PlayerStore;
+  useBetStore: BetStore;
   playerFightAction: FightPlayerAction | null;
   isPlayerTurn: boolean;
   numberOfEnemies: number;
   setIsPlayerTurn: React.Dispatch<React.SetStateAction<boolean>>;
+  setGameMode: React.Dispatch<React.SetStateAction<GameMode>>;
+}
+
+export interface TurnInterface {
+  index: number;
+  turnNumber: number;
 }
 
 const Fight: React.FC<FightProps> = ({
@@ -18,16 +30,23 @@ const Fight: React.FC<FightProps> = ({
   isPlayerTurn,
   setIsPlayerTurn,
   numberOfEnemies,
+  setGameMode,
+  useBetStore,
 }) => {
-  const [enemyNumberDied, setEnemyNumberDied] = useState<number>(0);
-  const [currentEnemyTurn, setCurrentEnemyTurn] = useState<number>(-1);
-  const [currentEnemyTurnIndex, setCurrentEnemyTurnIndex] = useState<number>(0);
-  //const [enemies, setEnemies] = useState<JSX.Element[]>([]);
+  const [enemyNumberDied, setEnemyNumberDied] = useState<number>(-1);
+  const [currentEnemyTurn, setCurrentEnemyTurn] = useState<TurnInterface>({
+    index: -1,
+    turnNumber: 0,
+  });
+  const [currentEnemyTurnIndex, setCurrentEnemyTurnIndex] =
+    useState<number>(-1);
+  const [aliveEnemiesIndexes, setAliveEnemiesIndexes] = useState<number[]>([]);
 
-  const fight = () => {};
+  const { addMoney } = usePlayerStore;
 
   const createEnemies = (enemyType: EnemyInterface): JSX.Element[] => {
     const enemies: JSX.Element[] = [];
+    const aliveEnemiesIndexes = [];
 
     for (let i = 0; i < numberOfEnemies; i++) {
       enemies.push(
@@ -35,48 +54,99 @@ const Fight: React.FC<FightProps> = ({
           x={150 + i * 250}
           y={250}
           enemy={enemyType}
-          isPlayerTurn={isPlayerTurn}
           setIsPlayerTurn={setIsPlayerTurn}
           playerAction={playerFightAction}
           usePlayerStore={usePlayerStore}
+          useBetStore={useBetStore}
           enemyNumber={i}
           currentEnemyTurn={currentEnemyTurn}
           setEnemyNumberDied={setEnemyNumberDied}
           key={i}
         />
       );
+      aliveEnemiesIndexes.push(i);
     }
 
     return enemies;
-    //setEnemies(enemies);
   };
   const enemies: JSX.Element[] = createEnemies(Goblin);
 
   useEffect(() => {
-    createEnemies(Goblin);
+    setAliveEnemiesIndexes(enemies.map((_, i) => i));
     setIsPlayerTurn(true);
   }, []);
 
-  useEffect(() => {
-    console.log(playerFightAction);
-  }, [playerFightAction]);
+  const enemyDied = () => {
+    const deadEnemyIndex = enemies.findIndex(
+      (e) => parseInt(e.key as string) === enemyNumberDied
+    );
 
-  useEffect(() => {}, [enemyNumberDied]);
+    aliveEnemiesIndexes.splice(
+      aliveEnemiesIndexes.findIndex((e) => e === deadEnemyIndex),
+      1
+    );
+    setAliveEnemiesIndexes([...aliveEnemiesIndexes]);
 
-  useEffect(() => {
-    if (enemies.length <= 0) return;
-    if (!isPlayerTurn) return;
+    if (aliveEnemiesIndexes.length <= 0) {
+      endFight();
+    }
+  };
 
-    const enemyIndex =
-      currentEnemyTurnIndex >= enemies.length - 1
-        ? 0
-        : currentEnemyTurnIndex + 1;
+  const endFight = () => {
+    setGameMode(GameMode.ADVENTURE);
+    addMoney(getMoneyReward());
+  };
+
+  const changeEnemyTurn = async () => {
+    if (aliveEnemiesIndexes.length <= 0) return;
+
+    setIsPlayerTurn(false);
+
+    const enemyIndex = aliveEnemiesIndexes[currentEnemyTurnIndex + 1]
+      ? aliveEnemiesIndexes[currentEnemyTurnIndex + 1]
+      : aliveEnemiesIndexes[0];
+    console.log(
+      currentEnemyTurnIndex >=
+        aliveEnemiesIndexes[aliveEnemiesIndexes.length - 1]
+    );
+
     setCurrentEnemyTurnIndex(enemyIndex);
-    console.log("Index: ", currentEnemyTurn);
-    setCurrentEnemyTurn(parseInt(enemies[enemyIndex].key as string));
-  }, [playerFightAction]);
+    setCurrentEnemyTurn({
+      index: parseInt(enemies[enemyIndex].key as string, 10),
+      turnNumber: currentEnemyTurn.turnNumber + 1,
+    });
+  };
 
-  return <>{enemies}</>;
+  useDidUpdateEffect(changeEnemyTurn, [playerFightAction]);
+
+  useDidUpdateEffect(enemyDied, [enemyNumberDied]);
+
+  return (
+    <>
+      <Text
+        text={isPlayerTurn ? "Your turn" : "Enemy turn"}
+        pivot={0.5}
+        x={250}
+        y={10}
+        style={
+          new TextStyle({
+            fontFamily: '"VT323", "monospace"',
+            fontSize: 40,
+            fill: ["#d1d1d1", "#000000"], // gradient
+            stroke: "#dd1111",
+            strokeThickness: 5,
+            letterSpacing: 20,
+            dropShadow: true,
+            wordWrap: true,
+            wordWrapWidth: 440,
+          })
+        }
+      />
+      {aliveEnemiesIndexes.map((e) => {
+        return enemies[e];
+      })}
+    </>
+  );
 };
 
 export default Fight;

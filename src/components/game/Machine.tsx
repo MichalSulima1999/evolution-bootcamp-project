@@ -35,6 +35,14 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
     spinDrum();
   }, [spinning]);
 
+  React.useEffect(() => {
+    setDrumImg(drums[0], setDrumImg1);
+    setDrumImg(drums[1], setDrumImg2);
+    setDrumImg(drums[2], setDrumImg3);
+
+    setSpinning(false);
+  }, [drums]);
+
   const setDrumImg = (
     drum: Drum,
     setImg: React.Dispatch<React.SetStateAction<string>>
@@ -71,12 +79,6 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
       setDrumImg2(drumImgs[(i + 1) % drumImgs.length]);
       setDrumImg3(drumImgs[(i + 2) % drumImgs.length]);
     }
-
-    setDrumImg(drums[0], setDrumImg1);
-    setDrumImg(drums[1], setDrumImg2);
-    setDrumImg(drums[2], setDrumImg3);
-
-    setSpinning(false);
   };
 
   return (

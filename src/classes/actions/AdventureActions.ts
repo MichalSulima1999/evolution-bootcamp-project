@@ -35,16 +35,11 @@ export class AdventureActions {
   }
 
   public spin(bet: number, actions: Actions): Drum[] {
-    console.log(bet);
-
     this._bet = bet;
 
     this.drum1 = this.getRandomDrum();
     this.drum2 = this.getRandomDrum();
     this.drum3 = this.getRandomDrum();
-
-    // Check if all drums have the same value
-    const drums = [this.drum1, this.drum2, this.drum3];
 
     if (
       (this.drum1 === this.drum2 && this.drum2 === this.drum3) ||
@@ -52,7 +47,6 @@ export class AdventureActions {
       (this.drum1 === this.drum3 && this.drum2 === Drum.WILD_CARD) ||
       (this.drum2 === this.drum3 && this.drum1 === Drum.WILD_CARD)
     ) {
-      console.log(`3 - ${this.drum1}`);
       switch (this.drum1) {
         case Drum.FIGHT:
           actions.fight(3);
@@ -84,7 +78,6 @@ export class AdventureActions {
           ? this.drum2
           : this.drum1;
 
-      console.log(`2 - ${drumValue}`);
       switch (drumValue) {
         case Drum.FIGHT:
           actions.fight(2);

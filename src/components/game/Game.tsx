@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import "./game.css";
 import Machine from "./Machine";
 import Bet from "./Bet";
-import { Drum, NumberOfDrums } from "../../classes/actions/AdventureActions";
+import { Drum } from "../../classes/actions/AdventureActions";
 import { useBetStore } from "../../classes/store/BetStore";
 import { observer } from "mobx-react";
 import { usePlayerStore } from "../../classes/store/PlayerStore";
@@ -18,7 +18,7 @@ const Game = observer(function Game() {
   const [drums, setDrums] = useState<Drum[]>([]);
   const [fightDrums, setFightDrums] = useState<FightDrum[]>([]);
   const [spinning, setSpinning] = useState(false);
-  const [gameMode, setGameMode] = useState<GameMode>(GameMode.FIGHT);
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.ADVENTURE);
   const [playerFightAction, setPlayerFightAction] =
     useState<FightPlayerAction | null>(null);
   const [numberOfEnemies, setNumberOfEnemies] = useState<number>(2);
@@ -49,10 +49,12 @@ const Game = observer(function Game() {
               />
               <Fight
                 usePlayerStore={usePlayerStore()}
+                useBetStore={useBetStore()}
                 playerFightAction={playerFightAction}
                 numberOfEnemies={numberOfEnemies}
                 isPlayerTurn={isPlayerTurn}
                 setIsPlayerTurn={setIsPlayerTurn}
+                setGameMode={setGameMode}
               />
             </>
           )}
@@ -64,6 +66,7 @@ const Game = observer(function Game() {
           <AdventureSpinButton
             spinning={spinning}
             setSpinning={setSpinning}
+            setNumberOfEnemies={setNumberOfEnemies}
             drums={drums}
             setDrums={setDrums}
             usePlayerStore={usePlayerStore()}
