@@ -7,6 +7,7 @@ import { NumberOfDrums } from "../../../classes/actions/AdventureActions";
 import { TurnInterface } from "./Fight";
 import { BetStore } from "../../../classes/store/BetStore";
 import { betBonus } from "../../../helpers/FightHelper";
+import SpecialAttackEffect from "./SpecialAttackEffect";
 
 const CRITICAL_MULTIPLIER = 1.5;
 
@@ -42,6 +43,7 @@ const Enemy: React.FC<EnemyProps> = ({
   const [isPlaying, setIsPlaying] = React.useState(true);
   const [isLooping, setIsLooping] = React.useState(true);
   const [isDead, setIsDead] = React.useState(false);
+  const [specialAttackActive, setSpecialAttackActive] = React.useState(false);
 
   const { takeDamage, armor, damage, specialAttack, addExperience } =
     usePlayerStore;
@@ -59,6 +61,7 @@ const Enemy: React.FC<EnemyProps> = ({
           });
           break;
         case FightDrum.SPECIAL_ATTACK:
+          setSpecialAttackActive(true);
           enemyTakeDamage(
             playerAction.numberOfDrums,
             specialAttack.damage
@@ -184,6 +187,13 @@ const Enemy: React.FC<EnemyProps> = ({
         x={x + 5}
         y={y - 90}
       />
+      {specialAttackActive && (
+        <SpecialAttackEffect
+          x={x}
+          y={y}
+          setSpecialAttackActive={setSpecialAttackActive}
+        />
+      )}
     </>
   );
 };

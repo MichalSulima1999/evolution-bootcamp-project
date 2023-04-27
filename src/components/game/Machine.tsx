@@ -28,6 +28,10 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
   ];
 
   React.useEffect(() => {
+    setSpinning(false);
+  }, []);
+
+  React.useEffect(() => {
     if (!spinning) {
       return;
     }

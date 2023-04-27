@@ -133,30 +133,33 @@ export class PlayerStore {
     }
   }
 
-  public changeArmorIfBetter(armor: number) {
+  public changeArmorIfBetter(armor: number): boolean {
     if (this._armor >= armor) {
-      return;
+      return false;
     }
 
     this._armor = armor;
     saveState(this, "playerStore");
+    return true;
   }
 
-  public changeDamageIfBetter(damage: number) {
+  public changeDamageIfBetter(damage: number): boolean {
     if (this._damage >= damage) {
-      return;
+      return false;
     }
     this._damage = damage;
     saveState(this, "playerStore");
+    return true;
   }
 
-  public changeSpecialAttackIfBetter(specialAttack: SpecialAttack) {
+  public changeSpecialAttackIfBetter(specialAttack: SpecialAttack): boolean {
     if (this._specialAttack.damage >= specialAttack.damage) {
-      return;
+      return false;
     }
 
     this._specialAttack = specialAttack;
     saveState(this, "playerStore");
+    return true;
   }
 
   public heal(amount: number) {
@@ -173,13 +176,32 @@ export class PlayerStore {
     if (this._health <= 0) {
       this._health = 0;
 
-      // Die
+      this.die();
     }
     saveState(this, "playerStore");
   }
 
   public addFreeSpins(amount: number) {
     this._freeSpins += amount;
+    saveState(this, "playerStore");
+  }
+
+  private die() {
+    this.resetStats();
+  }
+
+  private resetStats() {
+    const stats = getInitialStats();
+    this._armor = stats.armor;
+    this._damage = stats.damage;
+    this._maxHealth = stats.maxHealth;
+    this._money = stats.money;
+    this._specialAttack = stats.specialAttack;
+    this._health = this._maxHealth;
+    this._experienceToNextLevel = stats.experienceToNextLevel;
+    this._level = 1;
+    this._experience = 0;
+    this._freeSpins = 0;
     saveState(this, "playerStore");
   }
 

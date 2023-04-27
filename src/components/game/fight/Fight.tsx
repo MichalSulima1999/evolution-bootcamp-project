@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Enemy from "./Enemy";
 import { EnemyInterface, Goblin } from "../../../classes/enemies/Enemies";
-import { PlayerStore } from "../../../classes/store/PlayerStore";
+import { usePlayerStore } from "../../../classes/store/PlayerStore";
 import { FightPlayerAction, GameMode } from "../../../types";
 import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 import { Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
-import { BetStore } from "../../../classes/store/BetStore";
+import { useBetStore } from "../../../classes/store/BetStore";
 import { getMoneyReward } from "../../../services/FightService";
+import { observer } from "mobx-react";
 
 interface FightProps {
-  usePlayerStore: PlayerStore;
-  useBetStore: BetStore;
   playerFightAction: FightPlayerAction | null;
   isPlayerTurn: boolean;
   numberOfEnemies: number;
@@ -24,15 +23,13 @@ export interface TurnInterface {
   turnNumber: number;
 }
 
-const Fight: React.FC<FightProps> = ({
-  usePlayerStore,
+const Fight: React.FC<FightProps> = observer(function Fight({
   playerFightAction,
   isPlayerTurn,
   setIsPlayerTurn,
   numberOfEnemies,
   setGameMode,
-  useBetStore,
-}) => {
+}) {
   const [enemyNumberDied, setEnemyNumberDied] = useState<number>(-1);
   const [currentEnemyTurn, setCurrentEnemyTurn] = useState<TurnInterface>({
     index: -1,
@@ -42,7 +39,7 @@ const Fight: React.FC<FightProps> = ({
     useState<number>(-1);
   const [aliveEnemiesIndexes, setAliveEnemiesIndexes] = useState<number[]>([]);
 
-  const { addMoney } = usePlayerStore;
+  const { addMoney } = usePlayerStore();
 
   const createEnemies = (enemyType: EnemyInterface): JSX.Element[] => {
     const enemies: JSX.Element[] = [];
@@ -56,8 +53,8 @@ const Fight: React.FC<FightProps> = ({
           enemy={enemyType}
           setIsPlayerTurn={setIsPlayerTurn}
           playerAction={playerFightAction}
-          usePlayerStore={usePlayerStore}
-          useBetStore={useBetStore}
+          usePlayerStore={usePlayerStore()}
+          useBetStore={useBetStore()}
           enemyNumber={i}
           currentEnemyTurn={currentEnemyTurn}
           setEnemyNumberDied={setEnemyNumberDied}
@@ -126,19 +123,16 @@ const Fight: React.FC<FightProps> = ({
       <Text
         text={isPlayerTurn ? "Your turn" : "Enemy turn"}
         pivot={0.5}
-        x={250}
+        x={200}
         y={10}
         style={
           new TextStyle({
             fontFamily: '"VT323", "monospace"',
-            fontSize: 40,
-            fill: ["#d1d1d1", "#000000"], // gradient
-            stroke: "#dd1111",
+            fontSize: 50,
+            fill: "#ffffff", // gradient
+            stroke: "#000000",
             strokeThickness: 5,
             letterSpacing: 20,
-            dropShadow: true,
-            wordWrap: true,
-            wordWrapWidth: 440,
           })
         }
       />
@@ -147,6 +141,6 @@ const Fight: React.FC<FightProps> = ({
       })}
     </>
   );
-};
+});
 
 export default Fight;

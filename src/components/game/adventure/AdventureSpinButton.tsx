@@ -5,8 +5,8 @@ import {
   Drum,
   NumberOfDrums,
 } from "../../../classes/actions/AdventureActions";
-import { PlayerStore } from "../../../classes/store/PlayerStore";
-import { GameMode } from "../../../types";
+import { usePlayerStore } from "../../../classes/store/PlayerStore";
+import { DrawnActionAnimationInterface, GameMode } from "../../../types";
 import {
   Treasure,
   getFreeSpins,
@@ -15,7 +15,9 @@ import {
   getTrapDamage,
 } from "../../../services/TreasureService";
 import ImageButton from "../ImageButton";
-import { BetStore } from "../../../classes/store/BetStore";
+import { useBetStore } from "../../../classes/store/BetStore";
+import { Images } from "../../../helpers/FileHelper";
+import { observer } from "mobx-react";
 
 interface ButtonProps {
   spinning: boolean;
@@ -23,110 +25,162 @@ interface ButtonProps {
   setNumberOfEnemies: React.Dispatch<React.SetStateAction<number>>;
   drums: Drum[];
   setDrums: React.Dispatch<React.SetStateAction<Drum[]>>;
-  usePlayerStore: PlayerStore;
-  useBetStore: BetStore;
   setGameMode: React.Dispatch<React.SetStateAction<GameMode>>;
+  setShowDrawnActionAnimation: React.Dispatch<
+    React.SetStateAction<DrawnActionAnimationInterface>
+  >;
 }
 
-const AdventureSpinButton: React.FC<ButtonProps> = ({
-  spinning,
-  setSpinning,
-  setNumberOfEnemies,
-  setDrums,
-  usePlayerStore,
-  useBetStore,
-  setGameMode,
-}) => {
-  const adventureActions = new AdventureActions();
+const AdventureSpinButton: React.FC<ButtonProps> = observer(
+  function AdventureSpinButton({
+    spinning,
+    setSpinning,
+    setNumberOfEnemies,
+    setDrums,
+    setGameMode,
+    setShowDrawnActionAnimation,
+  }) {
+    const adventureActions = new AdventureActions();
 
-  const { bet } = useBetStore;
+    const { bet } = useBetStore();
 
-  const {
-    money,
-    maxHealth,
-    freeSpins,
-    betMoney,
-    changeArmorIfBetter,
-    changeDamageIfBetter,
-    changeSpecialAttackIfBetter,
-    addMoney,
-    takeDamage,
-    heal,
-    addFreeSpins,
-  } = usePlayerStore;
+    const {
+      money,
+      maxHealth,
+      freeSpins,
+      betMoney,
+      changeArmorIfBetter,
+      changeDamageIfBetter,
+      changeSpecialAttackIfBetter,
+      addMoney,
+      takeDamage,
+      heal,
+      addFreeSpins,
+    } = usePlayerStore();
 
-  const spin = async () => {
-    if (spinning) return;
-    if (bet > money && freeSpins <= 0) {
-      // informacja dla użytkownika
-      return;
-    }
+    const spin = async () => {
+      if (spinning) return;
+      if (bet > money && freeSpins <= 0) {
+        setShowDrawnActionAnimation({
+          show: true,
+          image: Images.COIN,
+          text: "NO GOLD!",
+        });
+        return;
+      }
 
-    const actions: Actions = {
-      fight: fightAction,
-      heal: healAction,
-      treasure: treasureAction,
-      freeSpins: freeSpinsAction,
-      trap: trapAction,
+      const actions: Actions = {
+        fight: fightAction,
+        heal: healAction,
+        treasure: treasureAction,
+        freeSpins: freeSpinsAction,
+        trap: trapAction,
+      };
+
+      setSpinning(true);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (freeSpins > 0) {
+        setDrums(adventureActions.spin(0, actions));
+        addFreeSpins(-1);
+      } else {
+        betMoney(bet);
+        setDrums(adventureActions.spin(bet, actions));
+      }
     };
 
-    setSpinning(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    if (freeSpins > 0) {
-      setDrums(adventureActions.spin(0, actions));
-      addFreeSpins(-1);
-    } else {
-      betMoney(bet);
-      setDrums(adventureActions.spin(bet, actions));
-    }
-  };
+    const fightAction = (drums: NumberOfDrums) => {
+      setNumberOfEnemies(drums);
+      setGameMode(GameMode.FIGHT);
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.SWORD,
+        text: "FIGHT",
+      });
+    };
 
-  const fightAction = (drums: NumberOfDrums) => {
-    setNumberOfEnemies(drums);
-    setGameMode(GameMode.FIGHT);
-  };
+    const healAction = (drums: NumberOfDrums) => {
+      const amount = getHealAmount(drums, bet, maxHealth);
+      heal(amount);
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.HEART,
+        text: "+ " + amount,
+      });
+    };
 
-  const healAction = (drums: NumberOfDrums) => {
-    heal(getHealAmount(drums, bet, maxHealth));
-  };
+    const treasureAction = (drums: NumberOfDrums) => {
+      const treasure = getRandomTreasure(drums, bet);
 
-  const treasureAction = (drums: NumberOfDrums) => {
-    const treasure = getRandomTreasure(drums, bet);
+      switch (treasure.type) {
+        case Treasure.WEAPON:
+          const changedWeapon = changeDamageIfBetter(treasure.amount);
+          setShowDrawnActionAnimation({
+            show: true,
+            image: Images.SWORD,
+            text: (changedWeapon ? "Better: " : "Worse: ") + treasure.amount,
+          });
+          break;
+        case Treasure.ARMOR:
+          const changedArmor = changeArmorIfBetter(treasure.amount);
+          setShowDrawnActionAnimation({
+            show: true,
+            image: Images.ARMOR,
+            text: (changedArmor ? "Better: " : "Worse: ") + treasure.amount,
+          });
+          break;
+        case Treasure.SPECIAL_ATTACK:
+          const changedSpecial = changeSpecialAttackIfBetter({
+            damage: treasure.amount,
+          });
+          setShowDrawnActionAnimation({
+            show: true,
+            image: Images.SWORD_SPECIAL,
+            text: (changedSpecial ? "Better: " : "Worse: ") + treasure.amount,
+          });
+          break;
+        case Treasure.MONEY:
+          addMoney(treasure.amount);
+          setShowDrawnActionAnimation({
+            show: true,
+            image: Images.COIN,
+            text: "+ " + treasure.amount,
+          });
+          break;
+      }
+    };
 
-    switch (treasure.type) {
-      case Treasure.WEAPON:
-        changeDamageIfBetter(treasure.amount);
-        break;
-      case Treasure.ARMOR:
-        changeArmorIfBetter(treasure.amount);
-        break;
-      case Treasure.SPECIAL_ATTACK:
-        changeSpecialAttackIfBetter({
-          damage: treasure.amount,
-        });
-        break;
-      case Treasure.MONEY:
-        addMoney(treasure.amount);
-        break;
-    }
-  };
+    const freeSpinsAction = (drums: NumberOfDrums) => {
+      const numberOfFreeSpins = getFreeSpins(drums, bet);
+      addFreeSpins(numberOfFreeSpins);
 
-  const freeSpinsAction = (drums: NumberOfDrums) => {
-    addFreeSpins(getFreeSpins(drums, bet));
-  };
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.FREE_SPINS,
+        text: "+ " + numberOfFreeSpins,
+      });
+    };
 
-  const trapAction = (drums: NumberOfDrums) => {
-    takeDamage(getTrapDamage(drums, maxHealth));
-  };
-  return (
-    <ImageButton
-      onClick={spin}
-      imgPath="/assets/spin.png"
-      imgPressedPath="/assets/spin_pressed.png"
-      width="6rem"
-      height="4rem"
-    />
-  );
-};
+    const trapAction = (drums: NumberOfDrums) => {
+      const damage = getTrapDamage(drums, maxHealth);
+      takeDamage(damage);
+
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.HEART,
+        text: "TRAP! -" + damage + " HP",
+      });
+    };
+
+    return (
+      <ImageButton
+        onClick={spin}
+        imgPath="/assets/spin.png"
+        imgPressedPath="/assets/spin_pressed.png"
+        width="6rem"
+        height="4rem"
+      />
+    );
+  }
+);
 
 export default AdventureSpinButton;

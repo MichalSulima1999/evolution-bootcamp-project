@@ -32,3 +32,9 @@ export interface FightPlayerAction {
   action: FightDrum;
   numberOfDrums: number;
 }
+
+export interface DrawnActionAnimationInterface {
+  show: boolean;
+  image: string;
+  text: string;
+}

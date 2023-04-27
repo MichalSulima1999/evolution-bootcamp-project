@@ -4,17 +4,24 @@ import "./game.css";
 import Machine from "./Machine";
 import Bet from "./Bet";
 import { Drum } from "../../classes/actions/AdventureActions";
-import { useBetStore } from "../../classes/store/BetStore";
-import { observer } from "mobx-react";
-import { usePlayerStore } from "../../classes/store/PlayerStore";
 import Fight from "./fight/Fight";
-import { FightPlayerAction, GameMode } from "../../types";
+import {
+  DrawnActionAnimationInterface,
+  FightPlayerAction,
+  GameMode,
+} from "../../types";
 import FightMachine from "./fight/FightMachine";
 import { FightDrum } from "../../types";
 import AdventureSpinButton from "./adventure/AdventureSpinButton";
 import FightSpinButton from "./fight/FightSpinButton";
+import DrawnActionAnimation from "./DrawnActionAnimation";
+import { BetStoreContext, betStore } from "../../classes/store/BetStore";
+import {
+  PlayerStoreContext,
+  playerStore,
+} from "../../classes/store/PlayerStore";
 
-const Game = observer(function Game() {
+const Game = () => {
   const [drums, setDrums] = useState<Drum[]>([]);
   const [fightDrums, setFightDrums] = useState<FightDrum[]>([]);
   const [spinning, setSpinning] = useState(false);
@@ -23,6 +30,12 @@ const Game = observer(function Game() {
     useState<FightPlayerAction | null>(null);
   const [numberOfEnemies, setNumberOfEnemies] = useState<number>(2);
   const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(true);
+  const [showDrawnActionAnimation, setShowDrawnActionAnimation] =
+    useState<DrawnActionAnimationInterface>({
+      show: false,
+      image: "",
+      text: "",
+    });
 
   return (
     <div className="stage">
@@ -41,22 +54,30 @@ const Game = observer(function Game() {
               setSpinning={setSpinning}
             />
           ) : (
-            <>
-              <FightMachine
-                drums={fightDrums}
-                spinning={spinning}
-                setSpinning={setSpinning}
-              />
-              <Fight
-                usePlayerStore={usePlayerStore()}
-                useBetStore={useBetStore()}
-                playerFightAction={playerFightAction}
-                numberOfEnemies={numberOfEnemies}
-                isPlayerTurn={isPlayerTurn}
-                setIsPlayerTurn={setIsPlayerTurn}
-                setGameMode={setGameMode}
-              />
-            </>
+            <BetStoreContext.Provider value={betStore}>
+              <PlayerStoreContext.Provider value={playerStore}>
+                <FightMachine
+                  drums={fightDrums}
+                  spinning={spinning}
+                  setSpinning={setSpinning}
+                />
+                <Fight
+                  playerFightAction={playerFightAction}
+                  numberOfEnemies={numberOfEnemies}
+                  isPlayerTurn={isPlayerTurn}
+                  setIsPlayerTurn={setIsPlayerTurn}
+                  setGameMode={setGameMode}
+                />
+              </PlayerStoreContext.Provider>
+            </BetStoreContext.Provider>
+          )}
+
+          {showDrawnActionAnimation.show && (
+            <DrawnActionAnimation
+              image={showDrawnActionAnimation.image}
+              text={showDrawnActionAnimation.text}
+              setShowDrawnActionAnimation={setShowDrawnActionAnimation}
+            />
           )}
         </Stage>
       </div>
@@ -69,18 +90,14 @@ const Game = observer(function Game() {
             setNumberOfEnemies={setNumberOfEnemies}
             drums={drums}
             setDrums={setDrums}
-            usePlayerStore={usePlayerStore()}
-            useBetStore={useBetStore()}
             setGameMode={setGameMode}
+            setShowDrawnActionAnimation={setShowDrawnActionAnimation}
           />
         ) : (
           <FightSpinButton
             spinning={spinning}
             setSpinning={setSpinning}
-            drums={fightDrums}
             setDrums={setFightDrums}
-            usePlayerStore={usePlayerStore()}
-            useBetStore={useBetStore()}
             setPlayerFightAction={setPlayerFightAction}
             isPlayerTurn={isPlayerTurn}
           />
@@ -88,6 +105,6 @@ const Game = observer(function Game() {
       </div>
     </div>
   );
-});
+};
 
 export default Game;
