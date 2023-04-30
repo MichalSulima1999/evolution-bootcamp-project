@@ -25,35 +25,6 @@ h1 {
   line-height: 1.1;
 }
 
-header {
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  text-align: center;
-}
-
-header h1 {
-  margin: 1rem;
-}
-
-.stats {
-  display: flex;
-  justify-content: space-around;
-}
-
-.stats img {
-  width: 25px;
-  margin-right: 1rem;
-}
-
-.stats > div {
-  display: flex;
-  align-items: center;
-  border-radius: 25px;
-  border: 2px solid #73ad21;
-  padding: 10px;
-}
-
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

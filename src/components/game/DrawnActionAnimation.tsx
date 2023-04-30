@@ -11,9 +11,9 @@ interface Props {
   >;
 }
 
-const SCALE_GROWTH_RATE = 0.02;
+const SCALE_GROWTH_RATE = 0.015;
 const INTERVAL_MS = 10;
-const ANIMATION_DURATION_MS = 4000;
+const ANIMATION_DURATION_MS = 1500;
 
 const DrawnActionAnimation: React.FC<Props> = ({
   image,
@@ -25,7 +25,7 @@ const DrawnActionAnimation: React.FC<Props> = ({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      timeRef.current += INTERVAL_MS * 4;
+      timeRef.current += INTERVAL_MS;
 
       setScale((prevScale) =>
         timeRef.current < ANIMATION_DURATION_MS / 2
@@ -56,7 +56,7 @@ const DrawnActionAnimation: React.FC<Props> = ({
           new TextStyle({
             fontFamily: '"VT323", "monospace"',
             fontSize: 40,
-            fill: "#ffffff", // gradient
+            fill: "#ffffff",
             stroke: "#000000",
             strokeThickness: 2,
           })

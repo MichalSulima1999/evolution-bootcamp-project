@@ -8,6 +8,8 @@ export enum Images {
   TRAP = "assets/trap.png",
   SWORD_SPECIAL = "assets/sword_special.png",
   FREE_SPINS = "assets/Free-spins.png",
+  LVL_UP = "assets/arrow_up.png",
+  UI_BACKGROUND = "assets/bottom-ui.png",
 }
 
 export function getFilenamesFromFolder(

@@ -18,6 +18,7 @@ import ImageButton from "../ImageButton";
 import { useBetStore } from "../../../classes/store/BetStore";
 import { Images } from "../../../helpers/FileHelper";
 import { observer } from "mobx-react";
+import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 
 interface ButtonProps {
   spinning: boolean;
@@ -29,6 +30,11 @@ interface ButtonProps {
   setShowDrawnActionAnimation: React.Dispatch<
     React.SetStateAction<DrawnActionAnimationInterface>
   >;
+  showMenu: boolean;
+  preventAdventureFromSpinning: boolean;
+  setPreventAdventureFromSpinning: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
 }
 
 const AdventureSpinButton: React.FC<ButtonProps> = observer(
@@ -39,6 +45,9 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
     setDrums,
     setGameMode,
     setShowDrawnActionAnimation,
+    showMenu,
+    preventAdventureFromSpinning,
+    setPreventAdventureFromSpinning,
   }) {
     const adventureActions = new AdventureActions();
 
@@ -56,16 +65,15 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
       takeDamage,
       heal,
       addFreeSpins,
+      increaseTurns,
     } = usePlayerStore();
 
-    const spin = async () => {
-      if (spinning) return;
-      if (bet > money && freeSpins <= 0) {
-        setShowDrawnActionAnimation({
-          show: true,
-          image: Images.COIN,
-          text: "NO GOLD!",
-        });
+    useDidUpdateEffect(() => {
+      if (spinning || showMenu) return;
+
+      // Fix to spinning after fight ended
+      if (preventAdventureFromSpinning) {
+        setPreventAdventureFromSpinning(false);
         return;
       }
 
@@ -77,8 +85,6 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
         trap: trapAction,
       };
 
-      setSpinning(true);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
       if (freeSpins > 0) {
         setDrums(adventureActions.spin(0, actions));
         addFreeSpins(-1);
@@ -86,6 +92,21 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
         betMoney(bet);
         setDrums(adventureActions.spin(bet, actions));
       }
+    }, [spinning]);
+
+    const spin = () => {
+      if (spinning) return;
+      if (bet > money && freeSpins <= 0) {
+        setShowDrawnActionAnimation({
+          show: true,
+          image: Images.COIN,
+          text: "NO GOLD!",
+        });
+        return;
+      }
+
+      setSpinning(true);
+      increaseTurns();
     };
 
     const fightAction = (drums: NumberOfDrums) => {

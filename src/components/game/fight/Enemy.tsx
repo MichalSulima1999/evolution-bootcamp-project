@@ -1,13 +1,18 @@
-import { AnimatedSprite, Sprite, Text } from "@pixi/react";
+import { AnimatedSprite, Container, Sprite, Text } from "@pixi/react";
 import React, { useEffect } from "react";
 import { EnemyInterface } from "../../../classes/enemies/Enemies";
-import { FightDrum, FightPlayerAction } from "../../../types";
-import { PlayerStore } from "../../../classes/store/PlayerStore";
+import {
+  DrawnActionAnimationInterface,
+  FightDrum,
+  FightPlayerAction,
+} from "../../../types";
+import { usePlayerStore } from "../../../classes/store/PlayerStore";
 import { NumberOfDrums } from "../../../classes/actions/AdventureActions";
 import { TurnInterface } from "./Fight";
-import { BetStore } from "../../../classes/store/BetStore";
+import { useBetStore } from "../../../classes/store/BetStore";
 import { betBonus } from "../../../helpers/FightHelper";
 import SpecialAttackEffect from "./SpecialAttackEffect";
+import { Images } from "../../../helpers/FileHelper";
 
 const CRITICAL_MULTIPLIER = 1.5;
 
@@ -17,11 +22,13 @@ export interface EnemyProps {
   enemy: EnemyInterface;
   setIsPlayerTurn: React.Dispatch<React.SetStateAction<boolean>>;
   playerAction: FightPlayerAction | null;
-  usePlayerStore: PlayerStore;
-  useBetStore: BetStore;
   enemyNumber: number;
   currentEnemyTurn: TurnInterface;
   setEnemyNumberDied: React.Dispatch<React.SetStateAction<number>>;
+  setShowDrawnActionAnimation: React.Dispatch<
+    React.SetStateAction<DrawnActionAnimationInterface>
+  >;
+  setPlayerDead: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Enemy: React.FC<EnemyProps> = ({
@@ -30,11 +37,11 @@ const Enemy: React.FC<EnemyProps> = ({
   enemy,
   setIsPlayerTurn,
   playerAction,
-  usePlayerStore,
-  useBetStore,
   enemyNumber,
   currentEnemyTurn,
   setEnemyNumberDied,
+  setShowDrawnActionAnimation,
+  setPlayerDead,
 }) => {
   const [health, setHealth] = React.useState(enemy.health);
   const [currentAnimation, setCurrentAnimation] = React.useState(
@@ -46,9 +53,9 @@ const Enemy: React.FC<EnemyProps> = ({
   const [specialAttackActive, setSpecialAttackActive] = React.useState(false);
 
   const { takeDamage, armor, damage, specialAttack, addExperience } =
-    usePlayerStore;
+    usePlayerStore();
 
-  const { bet } = useBetStore;
+  const { bet } = useBetStore();
 
   useEffect(() => {
     if (enemyNumber !== currentEnemyTurn.index || isDead) return;
@@ -92,7 +99,14 @@ const Enemy: React.FC<EnemyProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setEnemyNumberDied(enemyNumber);
     setIsPlayerTurn(true);
-    addExperience(enemy.experience);
+    const playerLeveledUp = addExperience(enemy.experience);
+    if (playerLeveledUp) {
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.LVL_UP,
+        text: "LEVEL UP!",
+      });
+    }
   };
 
   const attack = async () => {
@@ -106,20 +120,47 @@ const Enemy: React.FC<EnemyProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     setIsPlaying(false);
-    if (playerAction !== null && playerAction.action === FightDrum.DEFEND) {
-      takeDamage(
-        enemy.damage - armor * playerAction.numberOfDrums * betBonus(bet)
-      );
+    const hit = Math.random() < enemy.hitChance;
+    if (hit) {
+      let damage: number;
+      if (playerAction !== null && playerAction.action === FightDrum.DEFEND) {
+        damage = Math.floor(
+          enemy.damage - armor * playerAction.numberOfDrums * betBonus(bet)
+        );
+      } else {
+        damage = Math.floor(enemy.damage - armor);
+      }
+      const playerDied = takeDamage(damage);
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.SWORD,
+        text: `HIT! ${damage} DAMAGE TAKEN.`,
+      });
+
+      if (playerDied) {
+        setPlayerDead(true);
+        return;
+      }
     } else {
-      takeDamage(enemy.damage - armor);
+      setShowDrawnActionAnimation({
+        show: true,
+        image: Images.SWORD,
+        text: "ENEMY MISSED!",
+      });
     }
+
     await new Promise((resolve) => setTimeout(resolve, 100));
     setCurrentAnimation(enemy.idleImages);
     setIsPlaying(true);
     setIsPlayerTurn(true);
   };
 
-  // Return true when enemy is dead
+  /**
+   *
+   * @param numberOfDrums
+   * @param baseDamage
+   * @returns true if enemy died, false if not
+   */
   const enemyTakeDamage = async (
     numberOfDrums: NumberOfDrums,
     baseDamage: number
@@ -166,27 +207,30 @@ const Enemy: React.FC<EnemyProps> = ({
         x={x}
         y={y}
       />
-      <Sprite
-        image="/assets/bottom-ui.png"
-        anchor={0.5}
-        scale={0.09}
-        x={x}
-        y={y - 90}
-      />
-      <Sprite
-        image="/assets/heart.png"
-        anchor={0.5}
-        scale={0.4}
-        x={x - 25}
-        y={y - 90}
-      />
-      <Text
-        text={`${health}/${enemy.maxHealth}`}
-        anchor={0.5}
-        scale={0.5}
-        x={x + 5}
-        y={y - 90}
-      />
+      <Container position={[x, y - 90]} anchor={0.5}>
+        <Sprite
+          image="/assets/bottom-ui.png"
+          anchor={0.5}
+          scale={0.1}
+          x={0}
+          y={0}
+        />
+        <Text text={enemy.name} anchor={0.5} scale={0.5} x={0} y={-9} />
+        <Sprite
+          image="/assets/heart.png"
+          anchor={0.5}
+          scale={0.4}
+          x={-25}
+          y={9}
+        />
+        <Text
+          text={`${health}/${enemy.maxHealth}`}
+          anchor={0.5}
+          scale={0.5}
+          x={5}
+          y={9}
+        />
+      </Container>
       {specialAttackActive && (
         <SpecialAttackEffect
           x={x}

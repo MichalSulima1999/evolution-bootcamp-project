@@ -22,49 +22,37 @@ export function getRandomTreasure(
 ): TreasureType {
   const values = Object.values(Treasure);
   const randomIndex = Math.floor(Math.random() * values.length);
-  console.log(values[randomIndex]);
 
   const type = values[randomIndex] as Treasure;
+  let amount = 0;
 
   switch (type) {
     case Treasure.WEAPON:
-      const weapon = Math.floor(
+      amount = Math.floor(
         WEAPONS_DAMAGE[Math.floor(Math.random() * WEAPONS_DAMAGE.length)] +
           bet * 0.05 * numberOfDrums
       );
-      return {
-        type: Treasure.WEAPON,
-        amount: weapon,
-      };
     case Treasure.ARMOR:
-      const armor = Math.floor(
+      amount = Math.floor(
         ARMORS_DEFENCE[Math.floor(Math.random() * ARMORS_DEFENCE.length)] +
           bet * 0.05 * numberOfDrums
       );
-      return {
-        type: Treasure.ARMOR,
-        amount: armor,
-      };
     case Treasure.SPECIAL_ATTACK:
-      const specialAttack = Math.floor(
+      amount = Math.floor(
         SPECIAL_ATTACKS_DAMAGE[
           Math.floor(Math.random() * SPECIAL_ATTACKS_DAMAGE.length)
         ] +
           bet * 0.05 * numberOfDrums
       );
-      return {
-        type: Treasure.SPECIAL_ATTACK,
-        amount: specialAttack,
-      };
     case Treasure.MONEY:
-      const money = Math.floor(
+      amount = Math.floor(
         Math.floor(Math.random() * 20) + bet * 0.05 * numberOfDrums
       );
-      return {
-        type: Treasure.MONEY,
-        amount: money,
-      };
   }
+  return {
+    type: type,
+    amount: amount,
+  };
 }
 
 export const getFreeSpins = (drums: NumberOfDrums, bet: number): number => {

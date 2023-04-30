@@ -11,6 +11,7 @@ export interface EnemyInterface {
   dieImages: Texture<Resource>[];
   hurtImages: Texture<Resource>[];
   experience: number;
+  hitChance: number;
 }
 
 const getTextures = (
@@ -33,14 +34,23 @@ const getTextures = (
   return textures;
 };
 
-export const Goblin: EnemyInterface = {
-  name: "Goblin",
-  maxHealth: 100,
-  health: 100,
-  damage: 10,
-  idleImages: getTextures("goblin", "idle", 4),
-  attackImages: getTextures("goblin", "attack", 5),
-  dieImages: getTextures("goblin", "die", 4),
-  hurtImages: getTextures("goblin", "hurt", 4),
-  experience: 40,
+export const createGoblin = (
+  health: number,
+  damage: number,
+  experience: number,
+  hitChance: number
+): EnemyInterface => {
+  const goblin: EnemyInterface = {
+    name: "Goblin",
+    maxHealth: health,
+    health: health,
+    damage: damage,
+    idleImages: getTextures("goblin", "idle", 4),
+    attackImages: getTextures("goblin", "attack", 5),
+    dieImages: getTextures("goblin", "die", 4),
+    hurtImages: getTextures("goblin", "hurt", 4),
+    experience: experience,
+    hitChance: hitChance,
+  };
+  return goblin;
 };

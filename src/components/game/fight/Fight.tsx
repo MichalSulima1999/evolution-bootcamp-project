@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import Enemy from "./Enemy";
-import { EnemyInterface, Goblin } from "../../../classes/enemies/Enemies";
 import { usePlayerStore } from "../../../classes/store/PlayerStore";
-import { FightPlayerAction, GameMode } from "../../../types";
+import {
+  DrawnActionAnimationInterface,
+  FightDrum,
+  FightPlayerAction,
+  GameMode,
+} from "../../../types";
 import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 import { Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
-import { useBetStore } from "../../../classes/store/BetStore";
-import { getMoneyReward } from "../../../services/FightService";
+import { getEnemies, getMoneyReward } from "../../../services/FightService";
 import { observer } from "mobx-react";
+import { EnemyInterface } from "../../../classes/enemies/Enemies";
+import { Images } from "../../../helpers/FileHelper";
 
 interface FightProps {
   playerFightAction: FightPlayerAction | null;
@@ -16,6 +21,15 @@ interface FightProps {
   numberOfEnemies: number;
   setIsPlayerTurn: React.Dispatch<React.SetStateAction<boolean>>;
   setGameMode: React.Dispatch<React.SetStateAction<GameMode>>;
+  setSpinning: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowDrawnActionAnimation: React.Dispatch<
+    React.SetStateAction<DrawnActionAnimationInterface>
+  >;
+  setPreventAdventureFromSpinning: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  fightDrums: FightDrum[];
+  setPlayerDead: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface TurnInterface {
@@ -29,6 +43,11 @@ const Fight: React.FC<FightProps> = observer(function Fight({
   setIsPlayerTurn,
   numberOfEnemies,
   setGameMode,
+  setSpinning,
+  setShowDrawnActionAnimation,
+  setPreventAdventureFromSpinning,
+  fightDrums,
+  setPlayerDead,
 }) {
   const [enemyNumberDied, setEnemyNumberDied] = useState<number>(-1);
   const [currentEnemyTurn, setCurrentEnemyTurn] = useState<TurnInterface>({
@@ -38,48 +57,23 @@ const Fight: React.FC<FightProps> = observer(function Fight({
   const [currentEnemyTurnIndex, setCurrentEnemyTurnIndex] =
     useState<number>(-1);
   const [aliveEnemiesIndexes, setAliveEnemiesIndexes] = useState<number[]>([]);
+  const [enemies, setEnemies] = useState<EnemyInterface[]>([]);
 
-  const { addMoney } = usePlayerStore();
+  const { addMoney, numberOfTurns } = usePlayerStore();
 
-  const createEnemies = (enemyType: EnemyInterface): JSX.Element[] => {
-    const enemies: JSX.Element[] = [];
-    const aliveEnemiesIndexes = [];
-
-    for (let i = 0; i < numberOfEnemies; i++) {
-      enemies.push(
-        <Enemy
-          x={150 + i * 250}
-          y={250}
-          enemy={enemyType}
-          setIsPlayerTurn={setIsPlayerTurn}
-          playerAction={playerFightAction}
-          usePlayerStore={usePlayerStore()}
-          useBetStore={useBetStore()}
-          enemyNumber={i}
-          currentEnemyTurn={currentEnemyTurn}
-          setEnemyNumberDied={setEnemyNumberDied}
-          key={i}
-        />
-      );
-      aliveEnemiesIndexes.push(i);
-    }
-
-    return enemies;
-  };
-  const enemies: JSX.Element[] = createEnemies(Goblin);
+  useEffect(() => {
+    setIsPlayerTurn(true);
+    setEnemies(getEnemies(numberOfEnemies, numberOfTurns));
+    setPreventAdventureFromSpinning(true);
+  }, []);
 
   useEffect(() => {
     setAliveEnemiesIndexes(enemies.map((_, i) => i));
-    setIsPlayerTurn(true);
-  }, []);
+  }, [enemies]);
 
   const enemyDied = () => {
-    const deadEnemyIndex = enemies.findIndex(
-      (e) => parseInt(e.key as string) === enemyNumberDied
-    );
-
     aliveEnemiesIndexes.splice(
-      aliveEnemiesIndexes.findIndex((e) => e === deadEnemyIndex),
+      aliveEnemiesIndexes.findIndex((e) => e === enemyNumberDied),
       1
     );
     setAliveEnemiesIndexes([...aliveEnemiesIndexes]);
@@ -91,7 +85,14 @@ const Fight: React.FC<FightProps> = observer(function Fight({
 
   const endFight = () => {
     setGameMode(GameMode.ADVENTURE);
-    addMoney(getMoneyReward());
+    const money = getMoneyReward();
+    addMoney(money);
+    setShowDrawnActionAnimation({
+      show: true,
+      image: Images.COIN,
+      text: `YOU WON! +${money} GOLD!`,
+    });
+    setSpinning(false);
   };
 
   const changeEnemyTurn = async () => {
@@ -102,19 +103,15 @@ const Fight: React.FC<FightProps> = observer(function Fight({
     const enemyIndex = aliveEnemiesIndexes[currentEnemyTurnIndex + 1]
       ? aliveEnemiesIndexes[currentEnemyTurnIndex + 1]
       : aliveEnemiesIndexes[0];
-    console.log(
-      currentEnemyTurnIndex >=
-        aliveEnemiesIndexes[aliveEnemiesIndexes.length - 1]
-    );
 
     setCurrentEnemyTurnIndex(enemyIndex);
     setCurrentEnemyTurn({
-      index: parseInt(enemies[enemyIndex].key as string, 10),
+      index: enemyIndex,
       turnNumber: currentEnemyTurn.turnNumber + 1,
     });
   };
 
-  useDidUpdateEffect(changeEnemyTurn, [playerFightAction]);
+  useDidUpdateEffect(changeEnemyTurn, [fightDrums]);
 
   useDidUpdateEffect(enemyDied, [enemyNumberDied]);
 
@@ -129,16 +126,28 @@ const Fight: React.FC<FightProps> = observer(function Fight({
           new TextStyle({
             fontFamily: '"VT323", "monospace"',
             fontSize: 50,
-            fill: "#ffffff", // gradient
+            fill: "#ffffff",
             stroke: "#000000",
             strokeThickness: 5,
             letterSpacing: 20,
           })
         }
       />
-      {aliveEnemiesIndexes.map((e) => {
-        return enemies[e];
-      })}
+      {aliveEnemiesIndexes.map((i) => (
+        <Enemy
+          x={150 + i * 250}
+          y={250}
+          enemy={enemies[i]}
+          setIsPlayerTurn={setIsPlayerTurn}
+          playerAction={playerFightAction}
+          enemyNumber={i}
+          currentEnemyTurn={currentEnemyTurn}
+          setEnemyNumberDied={setEnemyNumberDied}
+          setShowDrawnActionAnimation={setShowDrawnActionAnimation}
+          setPlayerDead={setPlayerDead}
+          key={i}
+        />
+      ))}
     </>
   );
 });

@@ -66,17 +66,15 @@ export class AdventureActions {
         case Drum.WILD_CARD:
           return this.spin(bet, actions);
       }
-    } else if (
-      this.drum1 === this.drum2 ||
-      this.drum1 === this.drum3 ||
-      this.drum2 === this.drum3
-    ) {
+    } else if (new Set([this.drum1, this.drum2, this.drum3]).size === 2) {
       const drumValue =
         this.drum1 === this.drum2
           ? this.drum1
           : this.drum2 === this.drum3
           ? this.drum2
-          : this.drum1;
+          : this.drum1 === this.drum3
+          ? this.drum1
+          : -1;
 
       switch (drumValue) {
         case Drum.FIGHT:
@@ -96,6 +94,9 @@ export class AdventureActions {
           break;
         case Drum.WILD_CARD:
           return this.spin(bet, actions);
+        default:
+          console.log("Index out of range");
+          break;
       }
     }
     return [this.drum1, this.drum2, this.drum3];

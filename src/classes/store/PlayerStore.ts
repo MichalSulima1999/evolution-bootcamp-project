@@ -5,6 +5,8 @@ import { loadState, saveState } from "../../helpers/LocalStorageHelper";
 import { getInitialStats, getMaxLevel } from "../../services/PlayerService";
 import { levelUpPlayer } from "../../services/PlayerService";
 
+export const PLAYER_STORE_KEY = "playerStore";
+
 export class PlayerStore {
   private _money: number;
   private _health: number;
@@ -16,6 +18,7 @@ export class PlayerStore {
   private _experience: number;
   private _experienceToNextLevel: number;
   private _freeSpins: number;
+  private _numberOfTurns: number;
 
   /**
    * Getter money
@@ -97,9 +100,17 @@ export class PlayerStore {
     return this._freeSpins;
   }
 
+  /**
+   * Getter numberOfTurns
+   * @return {number }
+   */
+  public get numberOfTurns(): number {
+    return this._numberOfTurns;
+  }
+
   public addMoney(amount: number) {
     this._money += amount;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
   }
 
   public betMoney(amount: number) {
@@ -107,7 +118,7 @@ export class PlayerStore {
       return;
     }
     this._money -= amount;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
   }
 
   public levelUp(stats: LevelUpInterface) {
@@ -120,17 +131,24 @@ export class PlayerStore {
     this._level = stats.nextLevel;
     this._experience = 0;
     this._experienceToNextLevel = stats.experienceToNextLevel;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
   }
 
-  public addExperience(experience: number) {
+  /**
+   *
+   * @param experience
+   * @returns true if player level up, false if not
+   */
+  public addExperience(experience: number): boolean {
     const exp = experience + this._experience;
     if (exp >= this._experienceToNextLevel) {
       this._experience = exp - this._experienceToNextLevel;
       this.levelUp(levelUpPlayer(this._level));
+      return true;
     } else {
       this._experience = exp;
     }
+    return false;
   }
 
   public changeArmorIfBetter(armor: number): boolean {
@@ -139,7 +157,7 @@ export class PlayerStore {
     }
 
     this._armor = armor;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
     return true;
   }
 
@@ -148,7 +166,7 @@ export class PlayerStore {
       return false;
     }
     this._damage = damage;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
     return true;
   }
 
@@ -158,7 +176,7 @@ export class PlayerStore {
     }
 
     this._specialAttack = specialAttack;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
     return true;
   }
 
@@ -167,30 +185,38 @@ export class PlayerStore {
     if (this._health > this._maxHealth) {
       this._health = this._maxHealth;
     }
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
   }
 
-  public takeDamage(amount: number) {
-    if (amount <= 0) return;
+  /**
+   *
+   * @param amount
+   * @returns true if player died, false if not
+   */
+  public takeDamage(amount: number): boolean {
+    if (amount <= 0) return false;
     this._health -= amount;
     if (this._health <= 0) {
       this._health = 0;
 
       this.die();
+      return true;
     }
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
+    return false;
   }
 
   public addFreeSpins(amount: number) {
     this._freeSpins += amount;
-    saveState(this, "playerStore");
+    saveState(this, PLAYER_STORE_KEY);
   }
 
-  private die() {
-    this.resetStats();
+  public increaseTurns() {
+    this._numberOfTurns++;
+    saveState(this, PLAYER_STORE_KEY);
   }
 
-  private resetStats() {
+  public resetStats() {
     const stats = getInitialStats();
     this._armor = stats.armor;
     this._damage = stats.damage;
@@ -202,12 +228,17 @@ export class PlayerStore {
     this._level = 1;
     this._experience = 0;
     this._freeSpins = 0;
-    saveState(this, "playerStore");
+    this._numberOfTurns = 0;
+    saveState(this, PLAYER_STORE_KEY);
+  }
+
+  private die() {
+    this.resetStats();
   }
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
-    const loadedState = loadState("playerStore");
+    const loadedState = loadState(PLAYER_STORE_KEY);
     if (loadedState) {
       const state = loadedState as PlayerStore;
       this._armor = state._armor;
@@ -220,6 +251,7 @@ export class PlayerStore {
       this._experience = state._experience;
       this._freeSpins = state._freeSpins;
       this._experienceToNextLevel = state._experienceToNextLevel;
+      this._numberOfTurns = state._numberOfTurns;
     } else {
       const stats = getInitialStats();
       this._armor = stats.armor;
@@ -232,6 +264,7 @@ export class PlayerStore {
       this._level = 1;
       this._experience = 0;
       this._freeSpins = 0;
+      this._numberOfTurns = 0;
     }
   }
 }

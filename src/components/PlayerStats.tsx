@@ -1,6 +1,34 @@
 import React from "react";
 import { usePlayerStore } from "../classes/store/PlayerStore";
 import { observer } from "mobx-react";
+import styled from "styled-components";
+
+const Header = styled.header`
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+`;
+
+const H1 = styled.h1`
+  margin: 1rem;
+`;
+
+const Stats = styled.div`
+  display: flex;
+  justify-content: space-around;
+  > div {
+    display: flex;
+    align-items: center;
+    border-radius: 25px;
+    border: 2px solid #73ad21;
+    padding: 10px;
+  }
+  img {
+    width: 25px;
+    margin-right: 1rem;
+  }
+`;
 
 const PlayerStats = observer(function PlayerStats() {
   const {
@@ -17,9 +45,9 @@ const PlayerStats = observer(function PlayerStats() {
     level,
   } = usePlayerStore();
   return (
-    <header>
-      <h1>SlotQuest</h1>
-      <div className="stats">
+    <Header>
+      <H1>SlotQuest</H1>
+      <Stats>
         <div>
           <img src="assets/coin.png" alt="coin" />
           {money}$
@@ -59,8 +87,8 @@ const PlayerStats = observer(function PlayerStats() {
         >
           Add money
         </button>
-      </div>
-    </header>
+      </Stats>
+    </Header>
   );
 });
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { Sprite } from "@pixi/react";
 import { Drum } from "../../classes/actions/AdventureActions";
+import useDidUpdateEffect from "../../hooks/UseDidUpdateEffect";
 
 interface MachineProps {
   spinning: boolean;
@@ -28,10 +29,6 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
   ];
 
   React.useEffect(() => {
-    setSpinning(false);
-  }, []);
-
-  React.useEffect(() => {
     if (!spinning) {
       return;
     }
@@ -39,7 +36,7 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
     spinDrum();
   }, [spinning]);
 
-  React.useEffect(() => {
+  useDidUpdateEffect(() => {
     setDrumImg(drums[0], setDrumImg1);
     setDrumImg(drums[1], setDrumImg2);
     setDrumImg(drums[2], setDrumImg3);
@@ -83,6 +80,7 @@ const Machine: React.FC<MachineProps> = ({ spinning, setSpinning, drums }) => {
       setDrumImg2(drumImgs[(i + 1) % drumImgs.length]);
       setDrumImg3(drumImgs[(i + 2) % drumImgs.length]);
     }
+    setSpinning(false);
   };
 
   return (

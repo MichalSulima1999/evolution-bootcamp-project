@@ -14,15 +14,11 @@ export class FightActions {
   private drum3: FightDrum = FightDrum.ATTACK;
 
   public spin(bet: number, actions: FightActionsMethods): FightDrum[] {
-    console.log(this.getRandomDrum().toString());
-
     this.drum1 = this.getRandomDrum();
     this.drum2 = this.getRandomDrum();
     this.drum3 = this.getRandomDrum();
-    console.log([this.drum1, this.drum2, this.drum3]);
 
     if (this.drum1 === this.drum2 && this.drum2 === this.drum3) {
-      console.log(`3 - ${this.drum1}`);
       switch (this.drum1) {
         case FightDrum.ATTACK:
           actions.attack(3);
@@ -46,7 +42,6 @@ export class FightActions {
           ? this.drum2
           : this.drum1;
 
-      console.log(`2 - ${drumValue}`);
       switch (drumValue) {
         case FightDrum.ATTACK:
           actions.attack(2);
