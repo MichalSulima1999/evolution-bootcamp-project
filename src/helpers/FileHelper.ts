@@ -10,6 +10,7 @@ export enum Images {
   FREE_SPINS = "assets/Free-spins.png",
   LVL_UP = "assets/arrow_up.png",
   UI_BACKGROUND = "assets/bottom-ui.png",
+  BUTTON = "assets/button.png",
 }
 
 export function getFilenamesFromFolder(

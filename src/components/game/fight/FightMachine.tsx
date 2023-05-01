@@ -36,6 +36,14 @@ const FightMachine: React.FC<MachineProps> = ({
     spinDrum();
   }, [spinning]);
 
+  useDidUpdateEffect(() => {
+    setDrumImg(drums[0], setDrumImg1);
+    setDrumImg(drums[1], setDrumImg2);
+    setDrumImg(drums[2], setDrumImg3);
+
+    setSpinning(false);
+  }, [drums]);
+
   const setDrumImg = (
     drum: FightDrum,
     setImg: React.Dispatch<React.SetStateAction<string>>
@@ -63,11 +71,6 @@ const FightMachine: React.FC<MachineProps> = ({
       setDrumImg2(drumImgs[(i + 1) % drumImgs.length]);
       setDrumImg3(drumImgs[(i + 2) % drumImgs.length]);
     }
-
-    setDrumImg(drums[0], setDrumImg1);
-    setDrumImg(drums[1], setDrumImg2);
-    setDrumImg(drums[2], setDrumImg3);
-
     setSpinning(false);
   };
 

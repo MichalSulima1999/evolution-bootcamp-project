@@ -58,7 +58,7 @@ const Menu: React.FC<MenuProps> = observer(function Menu({
         y={-150}
         style={
           new TextStyle({
-            fontFamily: '"VT323", "monospace"',
+            fontFamily: '"VT323"',
             fontSize: 70,
             fill: "#ffffff",
             stroke: "#000000",
@@ -67,13 +67,7 @@ const Menu: React.FC<MenuProps> = observer(function Menu({
         }
       />
       <Container position={[-150, 150]} eventMode="static" onclick={newGame}>
-        <Sprite
-          image={Images.UI_BACKGROUND}
-          scale={0.2}
-          anchor={0.5}
-          x={0}
-          y={0}
-        />
+        <Sprite image={Images.BUTTON} scale={2} anchor={0.5} x={0} y={0} />
         <Text
           text="New game"
           anchor={0.5}
@@ -81,7 +75,7 @@ const Menu: React.FC<MenuProps> = observer(function Menu({
           y={0}
           style={
             new TextStyle({
-              fontFamily: '"VT323", "monospace"',
+              fontFamily: '"VT323"',
               fontSize: 40,
               fill: "#ffffff",
               stroke: "#000000",
@@ -91,13 +85,7 @@ const Menu: React.FC<MenuProps> = observer(function Menu({
         />
       </Container>
       <Container position={[150, 150]} eventMode="static" onclick={loadGame}>
-        <Sprite
-          image={Images.UI_BACKGROUND}
-          scale={0.2}
-          anchor={0.5}
-          x={0}
-          y={0}
-        />
+        <Sprite image={Images.BUTTON} scale={2} anchor={0.5} x={0} y={0} />
         <Text
           text="Load Game"
           anchor={0.5}
@@ -105,7 +93,7 @@ const Menu: React.FC<MenuProps> = observer(function Menu({
           y={0}
           style={
             new TextStyle({
-              fontFamily: '"VT323", "monospace"',
+              fontFamily: '"VT323"',
               fontSize: 40,
               fill: "#ffffff",
               stroke: "#000000",

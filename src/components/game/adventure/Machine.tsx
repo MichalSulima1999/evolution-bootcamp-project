@@ -1,7 +1,7 @@
 import React from "react";
 import { Sprite } from "@pixi/react";
-import { Drum } from "../../classes/actions/AdventureActions";
-import useDidUpdateEffect from "../../hooks/UseDidUpdateEffect";
+import { Drum } from "../../../classes/actions/AdventureActions";
+import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 
 interface MachineProps {
   spinning: boolean;

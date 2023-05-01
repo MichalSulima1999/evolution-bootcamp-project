@@ -16,7 +16,8 @@
     "pixi.js": "^7.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "styled-components": "^5.3.9"
+    "styled-components": "^5.3.9",
+    "use-font-face-observer": "^1.2.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

@@ -1,10 +1,10 @@
 import { NumberOfDrums } from "../classes/actions/AdventureActions";
 
 export enum Treasure {
-  WEAPON,
-  ARMOR,
-  SPECIAL_ATTACK,
-  MONEY,
+  WEAPON = "WEAPON",
+  ARMOR = "ARMOR",
+  SPECIAL_ATTACK = "SPECIAL_ATTACK",
+  MONEY = "MONEY",
 }
 
 export interface TreasureType {
@@ -12,43 +12,61 @@ export interface TreasureType {
   amount: number;
 }
 
-const WEAPONS_DAMAGE = [15, 20, 25, 30, 35, 40];
-const ARMORS_DEFENCE = [5, 10, 15, 20, 25, 30];
-const SPECIAL_ATTACKS_DAMAGE = [35, 45, 55, 65, 75, 85];
+const WEAPONS_DAMAGE = [15, 20, 25, 30, 35, 40, 65, 80];
+const ARMORS_DEFENCE = [5, 10, 15, 20, 25, 30, 40, 55];
+const SPECIAL_ATTACKS_DAMAGE = [35, 45, 55, 65, 75, 85, 100, 120];
 
 export function getRandomTreasure(
   numberOfDrums: NumberOfDrums,
-  bet: number
+  bet: number,
+  turnNumber: number
 ): TreasureType {
   const values = Object.values(Treasure);
   const randomIndex = Math.floor(Math.random() * values.length);
 
-  const type = values[randomIndex] as Treasure;
+  const type = values[randomIndex];
   let amount = 0;
+  let itemIndex = 0;
 
   switch (type) {
     case Treasure.WEAPON:
+      itemIndex =
+        Math.floor(turnNumber / 10) > WEAPONS_DAMAGE.length - 1
+          ? WEAPONS_DAMAGE.length - 1
+          : Math.floor(turnNumber / 10);
       amount = Math.floor(
-        WEAPONS_DAMAGE[Math.floor(Math.random() * WEAPONS_DAMAGE.length)] +
-          bet * 0.05 * numberOfDrums
+        WEAPONS_DAMAGE[itemIndex] + bet * 0.05 * numberOfDrums
       );
+      break;
     case Treasure.ARMOR:
+      itemIndex =
+        Math.floor(turnNumber / 10) > ARMORS_DEFENCE.length - 1
+          ? ARMORS_DEFENCE.length - 1
+          : Math.floor(turnNumber / 10);
       amount = Math.floor(
-        ARMORS_DEFENCE[Math.floor(Math.random() * ARMORS_DEFENCE.length)] +
-          bet * 0.05 * numberOfDrums
+        ARMORS_DEFENCE[itemIndex] + bet * 0.05 * numberOfDrums
       );
+      break;
     case Treasure.SPECIAL_ATTACK:
+      itemIndex =
+        Math.floor(turnNumber / 10) > SPECIAL_ATTACKS_DAMAGE.length - 1
+          ? SPECIAL_ATTACKS_DAMAGE.length - 1
+          : Math.floor(turnNumber / 10);
       amount = Math.floor(
-        SPECIAL_ATTACKS_DAMAGE[
-          Math.floor(Math.random() * SPECIAL_ATTACKS_DAMAGE.length)
-        ] +
-          bet * 0.05 * numberOfDrums
+        SPECIAL_ATTACKS_DAMAGE[itemIndex] + bet * 0.05 * numberOfDrums
       );
+      break;
     case Treasure.MONEY:
       amount = Math.floor(
-        Math.floor(Math.random() * 20) + bet * 0.05 * numberOfDrums
+        Math.floor(Math.random() * 20) + bet * 0.05 * numberOfDrums * turnNumber
       );
+      break;
   }
+  console.log({
+    type: type,
+    amount: amount,
+  });
+
   return {
     type: type,
     amount: amount,

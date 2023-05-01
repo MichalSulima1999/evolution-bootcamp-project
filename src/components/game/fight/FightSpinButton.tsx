@@ -10,8 +10,14 @@ import {
 } from "../../../classes/store/PlayerStore";
 import { NumberOfDrums } from "../../../classes/actions/AdventureActions";
 import { BetStore, useBetStore } from "../../../classes/store/BetStore";
-import { FightDrum, FightPlayerAction } from "../../../types";
+import {
+  DrawnActionAnimationInterface,
+  FightDrum,
+  FightPlayerAction,
+} from "../../../types";
 import { observer } from "mobx-react";
+import { Images } from "../../../helpers/FileHelper";
+import useDidUpdateEffect from "../../../hooks/UseDidUpdateEffect";
 
 interface ButtonProps {
   spinning: boolean;
@@ -21,6 +27,9 @@ interface ButtonProps {
     React.SetStateAction<FightPlayerAction | null>
   >;
   isPlayerTurn: boolean;
+  setShowDrawnActionAnimation: React.Dispatch<
+    React.SetStateAction<DrawnActionAnimationInterface>
+  >;
 }
 
 const FightSpinButton: React.FC<ButtonProps> = observer(
@@ -30,18 +39,15 @@ const FightSpinButton: React.FC<ButtonProps> = observer(
     setDrums,
     setPlayerFightAction,
     isPlayerTurn,
+    setShowDrawnActionAnimation,
   }) {
     const fightActions = new FightActions();
     const { money, freeSpins, betMoney, addFreeSpins } = usePlayerStore();
 
     const { bet } = useBetStore();
 
-    const spin = () => {
-      if (spinning || !isPlayerTurn) return;
-      if (bet > money && freeSpins <= 0) {
-        // informacja dla użytkownika
-        return;
-      }
+    useDidUpdateEffect(() => {
+      if (spinning) return;
 
       const actions: FightActionsMethods = {
         attack: function (drums: NumberOfDrums): void {
@@ -67,15 +73,29 @@ const FightSpinButton: React.FC<ButtonProps> = observer(
         },
       };
 
-      setSpinning(true);
       if (freeSpins > 0) {
-        setDrums(fightActions.spin(0, actions));
+        setDrums(fightActions.spin(10, actions));
         addFreeSpins(-1);
       } else {
         betMoney(bet);
         setDrums(fightActions.spin(bet, actions));
       }
+    }, [spinning]);
+
+    const spin = () => {
+      if (spinning || !isPlayerTurn) return;
+      if (bet > money && freeSpins <= 0) {
+        setShowDrawnActionAnimation({
+          show: true,
+          image: Images.COIN,
+          text: "NO GOLD!",
+        });
+        return;
+      }
+
+      setSpinning(true);
     };
+
     return (
       <div>
         <ImageButton

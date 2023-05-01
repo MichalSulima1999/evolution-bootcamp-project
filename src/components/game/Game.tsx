@@ -1,6 +1,6 @@
 import { Sprite, Stage } from "@pixi/react";
 import React, { useEffect, useState } from "react";
-import Machine from "./Machine";
+import Machine from "./adventure/Machine";
 import { Drum } from "../../classes/actions/AdventureActions";
 import Fight from "./fight/Fight";
 import {

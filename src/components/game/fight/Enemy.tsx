@@ -77,17 +77,12 @@ const Enemy: React.FC<EnemyProps> = ({
           });
           break;
         case FightDrum.DEFEND:
-          attackPlayer();
+          attack();
       }
     } else {
-      attackPlayer();
+      attack();
     }
   }, [currentEnemyTurn]);
-
-  const attackPlayer = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    attack();
-  };
 
   const die = async () => {
     setIsPlaying(false);
@@ -130,11 +125,13 @@ const Enemy: React.FC<EnemyProps> = ({
       } else {
         damage = Math.floor(enemy.damage - armor);
       }
+
+      damage = damage < 0 ? 0 : damage;
       const playerDied = takeDamage(damage);
       setShowDrawnActionAnimation({
         show: true,
         image: Images.SWORD,
-        text: `HIT! ${damage} DAMAGE TAKEN.`,
+        text: `HIT! ${damage} DAMAGE TAKEN`,
       });
 
       if (playerDied) {
@@ -180,7 +177,7 @@ const Enemy: React.FC<EnemyProps> = ({
       (numberOfDrums === 2
         ? baseDamage * betBonus(bet)
         : baseDamage * CRITICAL_MULTIPLIER * betBonus(bet));
-    setHealth(Math.ceil(hp));
+    setHealth(Math.ceil(hp < 0 ? 0 : hp));
 
     await new Promise((resolve) => setTimeout(resolve, 100));
     setCurrentAnimation(enemy.idleImages);

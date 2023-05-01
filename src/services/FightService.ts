@@ -1,8 +1,8 @@
 import { EnemyInterface, createGoblin } from "../classes/enemies/Enemies";
 import { randomIntFromInterval } from "../helpers/NumberHelper";
 
-export const getMoneyReward = (): number => {
-  return randomIntFromInterval(10, 100);
+export const getMoneyReward = (turnNumber: number): number => {
+  return randomIntFromInterval(10 + turnNumber, 100 + turnNumber);
 };
 
 export const getEnemies = (

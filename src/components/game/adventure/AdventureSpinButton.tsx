@@ -66,6 +66,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
       heal,
       addFreeSpins,
       increaseTurns,
+      numberOfTurns,
     } = usePlayerStore();
 
     useDidUpdateEffect(() => {
@@ -86,7 +87,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
       };
 
       if (freeSpins > 0) {
-        setDrums(adventureActions.spin(0, actions));
+        setDrums(adventureActions.spin(10, actions));
         addFreeSpins(-1);
       } else {
         betMoney(bet);
@@ -130,7 +131,7 @@ const AdventureSpinButton: React.FC<ButtonProps> = observer(
     };
 
     const treasureAction = (drums: NumberOfDrums) => {
-      const treasure = getRandomTreasure(drums, bet);
+      const treasure = getRandomTreasure(drums, bet, numberOfTurns);
 
       switch (treasure.type) {
         case Treasure.WEAPON:

@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import Machine from "../src/components/game/Machine";
+import Machine from "../src/components/game/adventure/Machine";
 import { Drum } from "../src/classes/actions/AdventureActions";
 import { act } from "react-dom/test-utils";
 

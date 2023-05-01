@@ -85,7 +85,7 @@ const Fight: React.FC<FightProps> = observer(function Fight({
 
   const endFight = () => {
     setGameMode(GameMode.ADVENTURE);
-    const money = getMoneyReward();
+    const money = getMoneyReward(numberOfTurns);
     addMoney(money);
     setShowDrawnActionAnimation({
       show: true,
@@ -124,7 +124,7 @@ const Fight: React.FC<FightProps> = observer(function Fight({
         y={10}
         style={
           new TextStyle({
-            fontFamily: '"VT323", "monospace"',
+            fontFamily: '"VT323"',
             fontSize: 50,
             fill: "#ffffff",
             stroke: "#000000",

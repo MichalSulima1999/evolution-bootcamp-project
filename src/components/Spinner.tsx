@@ -43,6 +43,10 @@ const Buttons = styled.div`
   background-color: black;
 `;
 
+const TurnText = styled.h1`
+  color: white;
+`;
+
 const Spinner: React.FC<SpinnerProps> = observer(function PlayerStats({
   adventureDrums,
   setDrums,
@@ -63,7 +67,7 @@ const Spinner: React.FC<SpinnerProps> = observer(function PlayerStats({
   return (
     <Buttons>
       <Bet />
-      <div>Turn: {numberOfTurns}</div>
+      <TurnText>Turn: {numberOfTurns}</TurnText>
       {gameMode === GameMode.ADVENTURE ? (
         <AdventureSpinButton
           spinning={spinning}
@@ -84,6 +88,7 @@ const Spinner: React.FC<SpinnerProps> = observer(function PlayerStats({
           setDrums={setFightDrums}
           setPlayerFightAction={setPlayerFightAction}
           isPlayerTurn={isPlayerTurn}
+          setShowDrawnActionAnimation={setShowDrawnActionAnimation}
         />
       )}
     </Buttons>
